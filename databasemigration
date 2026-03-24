@@ -1,0 +1,94 @@
+-- =========================
+-- DATABASE
+-- =========================
+CREATE DATABASE IF NOT EXISTS coffee_db;
+USE coffee_db;
+
+-- =========================
+-- USERS (LOGIN)
+-- =========================
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(100)
+);
+
+-- =========================
+-- PRODUCTS (MENU)
+-- =========================
+CREATE TABLE products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    category VARCHAR(50),
+    price DOUBLE,
+    stock_quantity INT
+);
+
+-- =========================
+-- ORDERS (HOA DON)
+-- =========================
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20),
+    total_amount DOUBLE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- =========================
+-- ORDER ITEMS (CHI TIET HOA DON)
+-- =========================
+CREATE TABLE order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    unit_price DOUBLE,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- =========================
+-- INVENTORY (TON KHO)
+-- =========================
+CREATE TABLE inventory_transactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT,
+    quantity_change INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- =========================
+-- SAMPLE DATA (TEST)
+-- =========================
+INSERT INTO users (username, password) VALUES
+('admin', '123'),
+('staff', '123');
+
+INSERT INTO products (name, category, price, stock_quantity) VALUES
+('Cà phê đen', 'coffee', 20000, 50),
+('Cà phê sữa', 'coffee', 25000, 50),
+('Trà đào', 'tea', 30000, 30),
+('Bánh ngọt', 'food', 15000, 20);
+
+-- =========================
+-- TEST ORDER
+-- =========================
+INSERT INTO orders (user_id, status, total_amount)
+VALUES (1, 'pending', 0);
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price)
+VALUES 
+(1, 1, 2, 20000),
+(1, 2, 1, 25000);
+
+-- UPDATE TOTAL
+UPDATE orders
+SET total_amount = (
+    SELECT SUM(quantity * unit_price)
+    FROM order_items
+    WHERE order_id = 1
+)
+WHERE id = 1;
