@@ -13,51 +13,43 @@ public class ProductPanel extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtName, txtCategory, txtPrice, txtStock;
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear;
+    private JButton btnAdd, btnUpdate, btnDelete;
     private int selectedId = -1;
-
-    // Colors
-    private static final Color PRIMARY = new Color(99, 102, 241);
-    private static final Color SUCCESS = new Color(34, 197, 94);
-    private static final Color DANGER = new Color(239, 68, 68);
-    private static final Color CARD_BG = Color.WHITE;
-    private static final Color BG_COLOR = new Color(243, 244, 246);
-    private static final Color TEXT_DARK = new Color(17, 24, 39);
-    private static final Color TEXT_GRAY = new Color(107, 114, 128);
-    private static final Color BORDER = new Color(229, 231, 235);
 
     public ProductPanel() {
         setLayout(new BorderLayout());
-        setBackground(BG_COLOR);
+        setBackground(UITheme.BG_COLOR);
 
-        // Left panel - Form
+        // Left form + Right table
         JPanel leftPanel = createFormPanel();
-
-        // Right panel - Table
         JPanel rightPanel = createTablePanel();
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-        split.setDividerLocation(320);
+        split.setDividerLocation(340);
         split.setResizeWeight(0);
+        split.setBackground(UITheme.BG_COLOR);
         add(split, BorderLayout.CENTER);
     }
 
     private JPanel createFormPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(CARD_BG);
-        panel.setBorder(BorderFactory.createLineBorder(BORDER));
-        panel.setPreferredSize(new Dimension(300, 0));
+        panel.setBackground(UITheme.BG_CARD);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(UITheme.BORDER),
+            new EmptyBorder(0, 0, 0, 0)
+        ));
+        panel.setPreferredSize(new Dimension(320, 0));
 
         JLabel title = new JLabel("Product Details");
-        title.setFont(new Font("Arial", Font.BOLD, 16));
-        title.setForeground(TEXT_DARK);
-        title.setBorder(new EmptyBorder(16, 16, 16, 16));
+        title.setFont(UITheme.FONT_SUBTITLE);
+        title.setForeground(UITheme.TEXT_DARK);
+        title.setBorder(new EmptyBorder(20, 20, 20, 20));
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JPanel form = new JPanel(new GridLayout(5, 2, 8, 8));
-        form.setBorder(new EmptyBorder(0, 16, 16, 16));
-        form.setBackground(CARD_BG);
+        JPanel form = new JPanel(new GridLayout(5, 2, 12, 12));
+        form.setBorder(new EmptyBorder(0, 20, 20, 20));
+        form.setBackground(UITheme.BG_CARD);
 
         txtName = createTextField();
         txtCategory = createTextField();
@@ -74,13 +66,13 @@ public class ProductPanel extends JPanel {
         form.add(txtStock);
 
         // Buttons
-        JPanel buttons = new JPanel(new GridLayout(1, 3, 8, 0));
-        buttons.setBorder(new EmptyBorder(0, 16, 16, 16));
-        buttons.setBackground(CARD_BG);
+        JPanel buttons = new JPanel(new GridLayout(1, 3, 12, 0));
+        buttons.setBorder(new EmptyBorder(0, 20, 20, 20));
+        buttons.setBackground(UITheme.BG_CARD);
 
-        btnAdd = createButton("Add", SUCCESS);
-        btnUpdate = createButton("Update", PRIMARY);
-        btnDelete = createButton("Delete", DANGER);
+        btnAdd = createButton("Add", UITheme.SUCCESS);
+        btnUpdate = createButton("Update", UITheme.PRIMARY);
+        btnDelete = createButton("Delete", UITheme.DANGER);
 
         btnAdd.addActionListener(e -> addProduct());
         btnUpdate.addActionListener(e -> updateProduct());
@@ -99,13 +91,16 @@ public class ProductPanel extends JPanel {
 
     private JPanel createTablePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(CARD_BG);
-        panel.setBorder(BorderFactory.createLineBorder(BORDER));
+        panel.setBackground(UITheme.BG_CARD);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(UITheme.BORDER),
+            new EmptyBorder(0, 0, 0, 0)
+        ));
 
         JLabel title = new JLabel("Products");
-        title.setFont(new Font("Arial", Font.BOLD, 16));
-        title.setForeground(TEXT_DARK);
-        title.setBorder(new EmptyBorder(16, 16, 16, 16));
+        title.setFont(UITheme.FONT_SUBTITLE);
+        title.setForeground(UITheme.TEXT_DARK);
+        title.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         String[] cols = {"ID", "Name", "Category", "Price", "Stock"};
         tableModel = new DefaultTableModel(cols, 0) {
@@ -114,12 +109,15 @@ public class ProductPanel extends JPanel {
         };
 
         table = new JTable(tableModel);
-        table.setFont(new Font("Arial", Font.PLAIN, 12));
-        table.setRowHeight(32);
-        table.setGridColor(BORDER);
-        table.setSelectionBackground(PRIMARY.brighter());
-        table.getTableHeader().setBackground(BG_COLOR);
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.setFont(UITheme.FONT_BODY);
+        table.setBackground(UITheme.BG_CARD);
+        table.setForeground(UITheme.TEXT_DARK);
+        table.setRowHeight(36);
+        table.setGridColor(UITheme.BORDER);
+        table.setSelectionBackground(UITheme.PRIMARY_LIGHT);
+        table.getTableHeader().setBackground(UITheme.BG_MEDIUM);
+        table.getTableHeader().setForeground(UITheme.TEXT_DARK);
+        table.getTableHeader().setFont(UITheme.FONT_BODY);
 
         table.getSelectionModel().addListSelectionListener(e -> {
             int row = table.getSelectedRow();
@@ -134,16 +132,16 @@ public class ProductPanel extends JPanel {
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getViewport().setBackground(CARD_BG);
+        scroll.getViewport().setBackground(UITheme.BG_CARD);
 
-        // Search bar
-        JPanel searchPanel = new JPanel(new BorderLayout(8, 0));
-        searchPanel.setBorder(new EmptyBorder(0, 16, 16, 16));
-        searchPanel.setBackground(CARD_BG);
+        // Search
+        JPanel searchPanel = new JPanel(new BorderLayout(12, 0));
+        searchPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
+        searchPanel.setBackground(UITheme.BG_CARD);
 
         JTextField txtSearch = createTextField();
-        txtSearch.setToolTipText("Search by name...");
-        JButton btnSearch = createButton("Search", PRIMARY);
+        txtSearch.setToolTipText("Search products...");
+        JButton btnSearch = createButton("Search", UITheme.PRIMARY);
 
         btnSearch.addActionListener(e -> searchProducts(txtSearch.getText()));
 
@@ -160,28 +158,34 @@ public class ProductPanel extends JPanel {
 
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Arial", Font.PLAIN, 12));
-        label.setForeground(TEXT_GRAY);
+        label.setFont(UITheme.FONT_BODY);
+        label.setForeground(UITheme.TEXT_MEDIUM);
         return label;
     }
 
     private JTextField createTextField() {
         JTextField tf = new JTextField();
-        tf.setFont(new Font("Arial", Font.PLAIN, 12));
+        tf.setFont(UITheme.FONT_BODY);
+        tf.setBackground(UITheme.BG_LIGHT);
+        tf.setForeground(UITheme.TEXT_DARK);
         tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER),
-            new EmptyBorder(8, 8, 8, 8)
+            BorderFactory.createLineBorder(UITheme.BORDER, 1),
+            new EmptyBorder(10, 12, 10, 12)
         ));
         return tf;
     }
 
     private JButton createButton(String text, Color bg) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
+        btn.setFont(UITheme.FONT_BUTTON);
         btn.setForeground(Color.WHITE);
         btn.setBackground(bg);
         btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(bg, 1),
+            new EmptyBorder(10, 20, 10, 20)
+        ));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }
 
@@ -195,8 +199,7 @@ public class ProductPanel extends JPanel {
                 });
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error loading products: " + e.getMessage());
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
     }
 
@@ -211,14 +214,14 @@ public class ProductPanel extends JPanel {
                 });
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error searching: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
     }
 
     private void addProduct() {
         try {
             if (txtName.getText().isEmpty() || txtCategory.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill all fields!");
+                JOptionPane.showMessageDialog(this, "Fill all fields!");
                 return;
             }
             Product p = new Product();
@@ -239,7 +242,7 @@ public class ProductPanel extends JPanel {
 
     private void updateProduct() {
         if (selectedId < 0) {
-            JOptionPane.showMessageDialog(this, "Select a product first!");
+            JOptionPane.showMessageDialog(this, "Select a product!");
             return;
         }
         try {
@@ -262,14 +265,14 @@ public class ProductPanel extends JPanel {
 
     private void deleteProduct() {
         if (selectedId < 0) {
-            JOptionPane.showMessageDialog(this, "Select a product first!");
+            JOptionPane.showMessageDialog(this, "Select a product!");
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "Delete this product?", "Confirm", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Delete?", "Confirm", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 if (productDAO.delete(selectedId)) {
-                    JOptionPane.showMessageDialog(this, "Product deleted!");
+                    JOptionPane.showMessageDialog(this, "Deleted!");
                     clearFields();
                     loadProducts();
                 }

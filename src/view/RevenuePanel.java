@@ -9,69 +9,53 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Arc2D;
 import java.util.List;
-import java.util.Map;
 
 public class RevenuePanel extends JPanel {
     private OrderDAO orderDAO = new OrderDAO();
     private ProductDAO productDAO = new ProductDAO();
 
-    // Colors
-    private static final Color PRIMARY = new Color(99, 102, 241);
-    private static final Color SUCCESS = new Color(34, 197, 94);
-    private static final Color WARNING = new Color(251, 146, 60);
-    private static final Color DANGER = new Color(239, 68, 68);
-    private static final Color CARD_BG = Color.WHITE;
-    private static final Color BG_COLOR = new Color(243, 244, 246);
-    private static final Color TEXT_DARK = new Color(17, 24, 39);
-    private static final Color TEXT_GRAY = new Color(107, 114, 128);
-    private static final Color BORDER = new Color(229, 231, 235);
     private static final Color[] CHART_COLORS = {
-        new Color(99, 102, 241),
-        new Color(34, 197, 94),
-        new Color(251, 146, 60),
-        new Color(239, 68, 68),
-        new Color(168, 85, 247),
-        new Color(20, 184, 166),
-        new Color(244, 114, 192)
+        UITheme.PRIMARY, UITheme.SUCCESS, UITheme.WARNING, UITheme.DANGER,
+        new Color(168, 85, 247), new Color(20, 184, 166), new Color(244, 114, 192)
     };
 
     public RevenuePanel() {
         setLayout(new BorderLayout());
-        setBackground(BG_COLOR);
-        setBorder(new EmptyBorder(24, 24, 24, 24));
+        setBackground(UITheme.BG_COLOR);
+        setBorder(new EmptyBorder(32, 32, 32, 32));
 
-        // Header
         JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(BG_COLOR);
-        header.setMaximumSize(new Dimension(800, 60));
+        header.setBackground(UITheme.BG_COLOR);
+        header.setMaximumSize(new Dimension(900, 60));
 
         JLabel title = new JLabel("Revenue Statistics");
-        title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(TEXT_DARK);
+        title.setFont(UITheme.FONT_HEADER);
+        title.setForeground(UITheme.TEXT_DARK);
 
         JButton btnRefresh = new JButton("Refresh");
-        btnRefresh.setFont(new Font("Arial", Font.PLAIN, 12));
-        btnRefresh.addActionListener(e -> repaint());
+        btnRefresh.setFont(UITheme.FONT_BODY);
+        btnRefresh.setBackground(UITheme.PRIMARY);
+        btnRefresh.setForeground(Color.WHITE);
         btnRefresh.setFocusPainted(false);
+        btnRefresh.addActionListener(e -> repaint());
 
         header.add(title, BorderLayout.WEST);
         header.add(btnRefresh, BorderLayout.EAST);
 
-        // Stats row
         JPanel stats = new JPanel(new GridLayout(1, 4, 16, 0));
-        stats.setBackground(BG_COLOR);
-        stats.setMaximumSize(new Dimension(800, 100));
-        stats.setBorder(new EmptyBorder(0, 0, 24, 0));
+        stats.setBackground(UITheme.BG_COLOR);
+        stats.setMaximumSize(new Dimension(900, 100));
+        stats.setBorder(new EmptyBorder(0, 0, 32, 0));
 
-        stats.add(createStatCard("Total Revenue", getTotalRevenue(), SUCCESS));
-        stats.add(createStatCard("Completed Orders", getOrderCount("completed"), PRIMARY));
-        stats.add(createStatCard("Pending Orders", getOrderCount("pending"), WARNING));
-        stats.add(createStatCard("Products", getProductCount(), PRIMARY));
+        stats.add(createStatCard("Total Revenue", getTotalRevenue(), UITheme.SUCCESS));
+        stats.add(createStatCard("Completed", getOrderCount("completed"), UITheme.PRIMARY));
+        stats.add(createStatCard("Pending", getOrderCount("pending"), UITheme.WARNING));
+        stats.add(createStatCard("Products", getProductCount(), UITheme.PRIMARY));
 
-        // Charts
         JSplitPane charts = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         charts.setDividerLocation(450);
         charts.setResizeWeight(1);
+        charts.setBackground(UITheme.BG_COLOR);
 
         JPanel leftChart = createBarChartPanel();
         JPanel rightChart = createPieChartPanel();
@@ -86,18 +70,15 @@ public class RevenuePanel extends JPanel {
 
     private JPanel createStatCard(String title, String value, Color accent) {
         JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(CARD_BG);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER),
-            new EmptyBorder(16, 16, 16, 16)
-        ));
+        card.setBackground(UITheme.BG_CARD);
+        card.setBorder(RoundedBorder.create(12, UITheme.BG_LIGHT));
 
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Arial", Font.PLAIN, 12));
-        lblTitle.setForeground(TEXT_GRAY);
+        lblTitle.setFont(UITheme.FONT_BODY);
+        lblTitle.setForeground(UITheme.TEXT_LIGHT);
 
         JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Arial", Font.BOLD, 24));
+        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblValue.setForeground(accent);
 
         card.add(lblTitle, BorderLayout.NORTH);
@@ -107,35 +88,29 @@ public class RevenuePanel extends JPanel {
     }
 
     private String getTotalRevenue() {
-        try {
-            double total = orderDAO.getTotalRevenue();
-            return String.format("%,.0f VND", total);
-        } catch (Exception e) { return "0 VND"; }
+        try { return String.format("%,.0f VND", orderDAO.getTotalRevenue()); }
+        catch (Exception e) { return "0 VND"; }
     }
 
     private String getOrderCount(String status) {
-        try {
-            return String.valueOf(orderDAO.getOrderCountByStatus(status));
-        } catch (Exception e) { return "0"; }
+        try { return String.valueOf(orderDAO.getOrderCountByStatus(status)); }
+        catch (Exception e) { return "0"; }
     }
 
     private String getProductCount() {
-        try {
-            return String.valueOf(productDAO.getAll().size());
-        } catch (Exception e) { return "0"; }
+        try { return String.valueOf(productDAO.getAll().size()); }
+        catch (Exception e) { return "0"; }
     }
 
     private JPanel createBarChartPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(CARD_BG);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER),
-            new EmptyBorder(16, 16, 16, 16)
-        ));
+        panel.setBackground(UITheme.BG_CARD);
+        panel.setBorder(RoundedBorder.create(12, UITheme.BG_LIGHT));
 
         JLabel title = new JLabel("Revenue by Category");
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        title.setForeground(TEXT_DARK);
+        title.setFont(UITheme.FONT_SUBTITLE);
+        title.setForeground(UITheme.TEXT_DARK);
+        title.setBorder(new EmptyBorder(16, 16, 16, 16));
 
         JPanel chartPanel = new JPanel(new GridLayout(1, 1)) {
             @Override
@@ -144,7 +119,7 @@ public class RevenuePanel extends JPanel {
                 drawBarChart(g);
             }
         };
-        chartPanel.setBackground(CARD_BG);
+        chartPanel.setBackground(UITheme.BG_CARD);
 
         panel.add(title, BorderLayout.NORTH);
         panel.add(chartPanel, BorderLayout.CENTER);
@@ -159,8 +134,8 @@ public class RevenuePanel extends JPanel {
         try {
             List<Object[]> data = orderDAO.getRevenueByCategory();
             if (data.isEmpty()) {
-                g2.setColor(TEXT_GRAY);
-                g2.setFont(new Font("Arial", Font.PLAIN, 14));
+                g2.setColor(UITheme.TEXT_LIGHT);
+                g2.setFont(UITheme.FONT_BODY);
                 g2.drawString("No data available", 150, 150);
                 return;
             }
@@ -171,60 +146,47 @@ public class RevenuePanel extends JPanel {
             int startY = 30;
 
             double maxValue = 0;
-            for (Object[] row : data) {
-                maxValue = Math.max(maxValue, (Double) row[1]);
-            }
+            for (Object[] row : data) maxValue = Math.max(maxValue, (Double) row[1]);
             if (maxValue == 0) maxValue = 1;
 
             int barCount = data.size();
             int barWidth = Math.min(60, (chartWidth - 20) / barCount - 10);
             int gap = (chartWidth - barCount * barWidth) / (barCount + 1);
 
-            g2.setColor(TEXT_GRAY);
-            g2.setFont(new Font("Arial", Font.PLAIN, 10));
-
             for (int i = 0; i < data.size(); i++) {
                 Object[] row = data.get(i);
-                String label = (String) row[0];
                 double value = (Double) row[1];
                 int barHeight = (int) ((value / maxValue) * chartHeight);
 
                 int x = startX + gap + i * (barWidth + gap);
                 int y = startY + chartHeight - barHeight;
 
-                // Bar
                 g2.setColor(CHART_COLORS[i % CHART_COLORS.length]);
                 g2.fillRect(x, y, barWidth, barHeight);
 
-                // Value
-                g2.setColor(TEXT_DARK);
-                g2.setFont(new Font("Arial", Font.BOLD, 10));
+                g2.setColor(UITheme.TEXT_DARK);
+                g2.setFont(UITheme.FONT_SMALL);
                 g2.drawString(String.format("%,.0f", value), x, y - 5);
 
-                // Label
-                g2.setColor(TEXT_GRAY);
-                g2.setFont(new Font("Arial", Font.PLAIN, 9));
-                String shortLabel = label.length() > 10 ? label.substring(0, 8) + "..." : label;
-                g2.drawString(shortLabel, x, startY + chartHeight + 15);
+                String label = ((String) row[0]).length() > 10 ? ((String) row[0]).substring(0, 8) + "..." : (String) row[0];
+                g2.setColor(UITheme.TEXT_LIGHT);
+                g2.drawString(label, x, startY + chartHeight + 15);
             }
         } catch (Exception e) {
-            g2.setColor(TEXT_GRAY);
-            g2.setFont(new Font("Arial", Font.PLAIN, 14));
+            g2.setColor(UITheme.TEXT_LIGHT);
             g2.drawString("Error loading data", 150, 150);
         }
     }
 
     private JPanel createPieChartPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(CARD_BG);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER),
-            new EmptyBorder(16, 16, 16, 16)
-        ));
+        panel.setBackground(UITheme.BG_CARD);
+        panel.setBorder(RoundedBorder.create(12, UITheme.BG_LIGHT));
 
         JLabel title = new JLabel("Order Status");
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        title.setForeground(TEXT_DARK);
+        title.setFont(UITheme.FONT_SUBTITLE);
+        title.setForeground(UITheme.TEXT_DARK);
+        title.setBorder(new EmptyBorder(16, 16, 16, 16));
 
         JPanel chartPanel = new JPanel(new GridLayout(1, 1)) {
             @Override
@@ -233,11 +195,10 @@ public class RevenuePanel extends JPanel {
                 drawPieChart(g);
             }
         };
-        chartPanel.setBackground(CARD_BG);
+        chartPanel.setBackground(UITheme.BG_CARD);
 
-        // Legend
         JPanel legend = new JPanel(new GridLayout(0, 1, 4, 4));
-        legend.setBackground(CARD_BG);
+        legend.setBackground(UITheme.BG_CARD);
         legend.setBorder(new EmptyBorder(8, 8, 8, 8));
 
         try {
@@ -247,9 +208,9 @@ public class RevenuePanel extends JPanel {
             int total = completed + pending + cancelled;
 
             if (total > 0) {
-                legend.add(createLegendItem("Completed", completed, PRIMARY));
-                legend.add(createLegendItem("Pending", pending, WARNING));
-                legend.add(createLegendItem("Cancelled", cancelled, DANGER));
+                legend.add(createLegendItem("Completed", completed, UITheme.PRIMARY));
+                legend.add(createLegendItem("Pending", pending, UITheme.WARNING));
+                legend.add(createLegendItem("Cancelled", cancelled, UITheme.DANGER));
             }
         } catch (Exception e) { }
 
@@ -262,15 +223,15 @@ public class RevenuePanel extends JPanel {
 
     private JPanel createLegendItem(String label, int count, Color color) {
         JPanel row = new JPanel(new BorderLayout(8, 0));
-        row.setBackground(CARD_BG);
+        row.setBackground(UITheme.BG_CARD);
 
         JPanel colorBox = new JPanel();
         colorBox.setBackground(color);
         colorBox.setPreferredSize(new Dimension(16, 16));
 
         JLabel text = new JLabel(label + ": " + count);
-        text.setFont(new Font("Arial", Font.PLAIN, 12));
-        text.setForeground(TEXT_DARK);
+        text.setFont(UITheme.FONT_BODY);
+        text.setForeground(UITheme.TEXT_DARK);
 
         row.add(colorBox, BorderLayout.WEST);
         row.add(text, BorderLayout.CENTER);
@@ -289,8 +250,7 @@ public class RevenuePanel extends JPanel {
             int total = completed + pending + cancelled;
 
             if (total == 0) {
-                g2.setColor(TEXT_GRAY);
-                g2.setFont(new Font("Arial", Font.PLAIN, 14));
+                g2.setColor(UITheme.TEXT_LIGHT);
                 g2.drawString("No orders yet", 130, 150);
                 return;
             }
@@ -300,7 +260,7 @@ public class RevenuePanel extends JPanel {
             int y = (getHeight() - size) / 2;
 
             double[] values = {completed, pending, cancelled};
-            Color[] colors = {PRIMARY, WARNING, DANGER};
+            Color[] colors = {UITheme.PRIMARY, UITheme.WARNING, UITheme.DANGER};
             double startAngle = 0;
 
             for (int i = 0; i < values.length; i++) {
@@ -312,21 +272,18 @@ public class RevenuePanel extends JPanel {
                 }
             }
 
-            // Draw donut hole
-            g2.setColor(CARD_BG);
+            g2.setColor(UITheme.BG_CARD);
             g2.fill(new Ellipse2D.Double(x + size * 0.3, y + size * 0.3, size * 0.4, size * 0.4));
 
-            // Center text
-            g2.setColor(TEXT_DARK);
-            g2.setFont(new Font("Arial", Font.BOLD, 16));
+            g2.setColor(UITheme.TEXT_DARK);
+            g2.setFont(new Font("Segoe UI", Font.BOLD, 16));
             String totalText = String.valueOf(total);
             FontMetrics fm = g2.getFontMetrics();
             int textWidth = fm.stringWidth(totalText);
             g2.drawString(totalText, x + size / 2 - textWidth / 2, y + size / 2 + 6);
 
         } catch (Exception e) {
-            g2.setColor(TEXT_GRAY);
-            g2.setFont(new Font("Arial", Font.PLAIN, 14));
+            g2.setColor(UITheme.TEXT_LIGHT);
             g2.drawString("Error loading data", 130, 150);
         }
     }

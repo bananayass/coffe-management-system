@@ -1,12 +1,8 @@
 package view;
 
-import dao.DBConnection;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -14,37 +10,25 @@ public class MainFrame extends JFrame {
     private JPanel contentPanel;
     private JLabel lblDashboard, lblProducts, lblOrders, lblRevenue;
     private String currentPage = "Dashboard";
-
-    // Clean color palette
-    private static final Color PRIMARY = new Color(99, 102, 241);
-    private static final Color SUCCESS = new Color(34, 197, 94);
-    private static final Color WARNING = new Color(251, 146, 60);
-    private static final Color SIDEBAR_DARK = new Color(17, 24, 39);
-    private static final Color SIDEBAR_HOVER = new Color(31, 41, 55);
-    private static final Color CARD_BG = Color.WHITE;
-    private static final Color BG_COLOR = new Color(243, 244, 246);
-    private static final Color TEXT_DARK = new Color(17, 24, 39);
-    private static final Color TEXT_GRAY = new Color(107, 114, 128);
-    private static final Color TEXT_LIGHT = new Color(156, 163, 175);
-    private static final Color BORDER = new Color(229, 231, 235);
+    private ThemeToggle themeToggle;
 
     public MainFrame() {
         setTitle("Coffee Shop Management");
-        setSize(1200, 750);
+        setSize(1280, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Main container
         JPanel container = new JPanel(new BorderLayout());
-        container.setBackground(BG_COLOR);
+        container.setBackground(UITheme.BG_COLOR);
 
-        // Left sidebar
+        // Left sidebar - Dark for contrast
         JPanel sidebar = createSidebar();
         container.add(sidebar, BorderLayout.WEST);
 
         // Main content area
         contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBackground(BG_COLOR);
+        contentPanel.setBackground(UITheme.BG_COLOR);
         showDashboard();
 
         container.add(contentPanel, BorderLayout.CENTER);
@@ -55,38 +39,51 @@ public class MainFrame extends JFrame {
 
     private JPanel createSidebar() {
         JPanel sidebar = new JPanel();
-        sidebar.setBackground(SIDEBAR_DARK);
-        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setBackground(UITheme.BG_DARK);
+        sidebar.setPreferredSize(new Dimension(UITheme.SIDEBAR_WIDTH, 0));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBorder(new EmptyBorder(20, 0, 20, 0));
+        sidebar.setBorder(new EmptyBorder(24, 0, 24, 0));
 
-        // Logo
+        // Top section with logo and theme toggle
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setBackground(UITheme.BG_DARK);
+        topPanel.setBorder(new EmptyBorder(0, 24, 20, 24));
+
+        // Logo section
         JPanel logoPanel = new JPanel();
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
-        logoPanel.setBackground(SIDEBAR_DARK);
-        logoPanel.setBorder(new EmptyBorder(0, 24, 30, 24));
+        logoPanel.setBackground(UITheme.BG_DARK);
 
-        JLabel logo = new JLabel("COFFEE");
-        logo.setFont(new Font("Arial", Font.BOLD, 22));
-        logo.setForeground(PRIMARY);
+        JLabel logo = new JLabel("☕ Coffee");
+        logo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        logo.setForeground(UITheme.PRIMARY);
 
         JLabel sub = new JLabel("Shop Manager");
-        sub.setFont(new Font("Arial", Font.PLAIN, 11));
-        sub.setForeground(TEXT_LIGHT);
+        sub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        sub.setForeground(new Color(148, 163, 184));
 
         logoPanel.add(logo);
+        logoPanel.add(Box.createVerticalStrut(4));
         logoPanel.add(sub);
-        logoPanel.add(Box.createVerticalStrut(40));
+
+        // Theme toggle
+        themeToggle = new ThemeToggle();
+        themeToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        topPanel.add(logoPanel);
+        topPanel.add(Box.createVerticalStrut(20));
+        topPanel.add(themeToggle);
 
         // Menu items
         JPanel menu = new JPanel();
         menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
-        menu.setBackground(SIDEBAR_DARK);
+        menu.setBackground(UITheme.BG_DARK);
 
-        lblDashboard = createMenuItem("Dashboard", true);
-        lblProducts = createMenuItem("Products", false);
-        lblOrders = createMenuItem("Orders", false);
-        lblRevenue = createMenuItem("Revenue", false);
+        lblDashboard = createMenuItem("📊 Dashboard", true);
+        lblProducts = createMenuItem("📦 Products", false);
+        lblOrders = createMenuItem("🛒 Orders", false);
+        lblRevenue = createMenuItem("💰 Revenue", false);
 
         lblDashboard.addMouseListener(createNavClick(lblDashboard, "Dashboard"));
         lblProducts.addMouseListener(createNavClick(lblProducts, "Products"));
@@ -98,10 +95,11 @@ public class MainFrame extends JFrame {
         menu.add(lblOrders);
         menu.add(lblRevenue);
 
-        // Logout at bottom
+        // Spacer
         menu.add(Box.createVerticalGlue());
 
-        JLabel lblLogout = createMenuItem("Logout", false);
+        // Logout
+        JLabel lblLogout = createMenuItem("🚪 Logout", false);
         lblLogout.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -114,7 +112,7 @@ public class MainFrame extends JFrame {
         });
         menu.add(lblLogout);
 
-        sidebar.add(logoPanel);
+        sidebar.add(topPanel);
         sidebar.add(menu);
 
         return sidebar;
@@ -122,14 +120,32 @@ public class MainFrame extends JFrame {
 
     private JLabel createMenuItem(String text, boolean active) {
         JLabel item = new JLabel("  " + text);
-        item.setFont(new Font("Arial", Font.PLAIN, 14));
-        item.setForeground(active ? Color.WHITE : TEXT_LIGHT);
+        item.setFont(UITheme.FONT_BODY);
+        item.setForeground(active ? Color.WHITE : new Color(148, 163, 184));
         item.setOpaque(true);
-        item.setBackground(active ? PRIMARY : SIDEBAR_DARK);
-        item.setMaximumSize(new Dimension(220, 44));
-        item.setPreferredSize(new Dimension(220, 44));
+        item.setBackground(active ? UITheme.PRIMARY : UITheme.BG_DARK);
+        item.setMaximumSize(new Dimension(UITheme.SIDEBAR_WIDTH, 48));
+        item.setPreferredSize(new Dimension(UITheme.SIDEBAR_WIDTH, 48));
         item.setBorder(new EmptyBorder(0, 24, 0, 24));
         item.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Hover effect
+        item.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!item.getBackground().equals(UITheme.PRIMARY)) {
+                    item.setBackground(UITheme.BG_MEDIUM_DARK);
+                    item.setForeground(Color.WHITE);
+                }
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!item.getBackground().equals(UITheme.PRIMARY)) {
+                    item.setBackground(UITheme.BG_DARK);
+                    item.setForeground(new Color(148, 163, 184));
+                }
+            }
+        });
 
         return item;
     }
@@ -142,14 +158,16 @@ public class MainFrame extends JFrame {
             }
             @Override
             public void mouseEntered(MouseEvent e) {
-                if (!label.getBackground().equals(PRIMARY)) {
-                    label.setBackground(SIDEBAR_HOVER);
+                if (!label.getBackground().equals(UITheme.PRIMARY)) {
+                    label.setBackground(UITheme.BG_MEDIUM_DARK);
+                    label.setForeground(Color.WHITE);
                 }
             }
             @Override
             public void mouseExited(MouseEvent e) {
-                if (!label.getBackground().equals(PRIMARY)) {
-                    label.setBackground(SIDEBAR_DARK);
+                if (!label.getBackground().equals(UITheme.PRIMARY)) {
+                    label.setBackground(UITheme.BG_DARK);
+                    label.setForeground(new Color(148, 163, 184));
                 }
             }
         };
@@ -159,34 +177,34 @@ public class MainFrame extends JFrame {
         currentPage = page;
 
         // Reset all menu items
-        lblDashboard.setBackground(SIDEBAR_DARK);
-        lblDashboard.setForeground(TEXT_LIGHT);
-        lblProducts.setBackground(SIDEBAR_DARK);
-        lblProducts.setForeground(TEXT_LIGHT);
-        lblOrders.setBackground(SIDEBAR_DARK);
-        lblOrders.setForeground(TEXT_LIGHT);
-        lblRevenue.setBackground(SIDEBAR_DARK);
-        lblRevenue.setForeground(TEXT_LIGHT);
+        lblDashboard.setBackground(UITheme.BG_DARK);
+        lblDashboard.setForeground(new Color(148, 163, 184));
+        lblProducts.setBackground(UITheme.BG_DARK);
+        lblProducts.setForeground(new Color(148, 163, 184));
+        lblOrders.setBackground(UITheme.BG_DARK);
+        lblOrders.setForeground(new Color(148, 163, 184));
+        lblRevenue.setBackground(UITheme.BG_DARK);
+        lblRevenue.setForeground(new Color(148, 163, 184));
 
         // Highlight active
         switch (page) {
             case "Dashboard":
-                lblDashboard.setBackground(PRIMARY);
+                lblDashboard.setBackground(UITheme.PRIMARY);
                 lblDashboard.setForeground(Color.WHITE);
                 showDashboard();
                 break;
             case "Products":
-                lblProducts.setBackground(PRIMARY);
+                lblProducts.setBackground(UITheme.PRIMARY);
                 lblProducts.setForeground(Color.WHITE);
                 showProducts();
                 break;
             case "Orders":
-                lblOrders.setBackground(PRIMARY);
+                lblOrders.setBackground(UITheme.PRIMARY);
                 lblOrders.setForeground(Color.WHITE);
                 showOrders();
                 break;
             case "Revenue":
-                lblRevenue.setBackground(PRIMARY);
+                lblRevenue.setBackground(UITheme.PRIMARY);
                 lblRevenue.setForeground(Color.WHITE);
                 showRevenue();
                 break;

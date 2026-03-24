@@ -5,7 +5,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.RenderingHints;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -19,20 +22,11 @@ import javax.swing.border.EmptyBorder;
 
 public class Dashboard extends JPanel {
 
-    private static final Color PRIMARY = new Color(99, 102, 241);
-    private static final Color SUCCESS = new Color(34, 197, 94);
-    private static final Color WARNING = new Color(251, 146, 60);
-    private static final Color CARD_BG = Color.WHITE;
-    private static final Color BG_COLOR = new Color(243, 244, 246);
-    private static final Color TEXT_DARK = new Color(17, 24, 39);
-    private static final Color TEXT_GRAY = new Color(107, 114, 128);
-    private static final Color BORDER = new Color(229, 231, 235);
-
     private JLabel lblProducts, lblOrders, lblRevenue;
 
     public Dashboard() {
         setLayout(new BorderLayout());
-        setBackground(BG_COLOR);
+        setBackground(UITheme.BG_COLOR);
 
         JPanel content = createContent();
         add(content, BorderLayout.CENTER);
@@ -43,66 +37,70 @@ public class Dashboard extends JPanel {
     private JPanel createContent() {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBackground(BG_COLOR);
-        content.setBorder(new EmptyBorder(24, 24, 24, 24));
+        content.setBackground(UITheme.BG_COLOR);
+        content.setBorder(new EmptyBorder(32, 32, 32, 32));
 
         // Header
         JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(BG_COLOR);
-        header.setMaximumSize(new Dimension(800, 60));
-        header.setPreferredSize(new Dimension(800, 60));
+        header.setBackground(UITheme.BG_COLOR);
+        header.setMaximumSize(new Dimension(900, 60));
 
         JLabel title = new JLabel("Dashboard");
-        title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(TEXT_DARK);
+        title.setFont(UITheme.FONT_HEADER);
+        title.setForeground(UITheme.TEXT_DARK);
 
         JLabel date = new JLabel(java.time.LocalDate.now().toString());
-        date.setFont(new Font("Arial", Font.PLAIN, 12));
-        date.setForeground(TEXT_GRAY);
+        date.setFont(UITheme.FONT_SMALL);
+        date.setForeground(UITheme.TEXT_LIGHT);
 
         header.add(title, BorderLayout.WEST);
         header.add(date, BorderLayout.EAST);
 
-        // Stats row
-        JPanel stats = new JPanel(new GridLayout(1, 3, 16, 0));
-        stats.setBackground(BG_COLOR);
-        stats.setMaximumSize(new Dimension(800, 120));
-        stats.setPreferredSize(new Dimension(800, 120));
-        stats.setBorder(new EmptyBorder(24, 0, 24, 0));
+        // Stats cards
+        JPanel stats = new JPanel(new GridLayout(1, 3, 24, 0));
+        stats.setBackground(UITheme.BG_COLOR);
+        stats.setMaximumSize(new Dimension(900, 140));
+        stats.setBorder(new EmptyBorder(32, 0, 32, 0));
 
-        stats.add(createStatCard("Products", "0", SUCCESS));
-        stats.add(createStatCard("Orders", "0", PRIMARY));
-        stats.add(createStatCard("Revenue", "0 VND", WARNING));
+        stats.add(createStatCard("Products", "0", UITheme.PRIMARY, "📦"));
+        stats.add(createStatCard("Orders", "0", UITheme.SUCCESS, "🛒"));
+        stats.add(createStatCard("Revenue", "0 VND", UITheme.WARNING, "💰"));
 
-        // Table section
+        // Table section - White card with shadow effect
         JPanel tableSection = new JPanel(new BorderLayout());
-        tableSection.setBackground(CARD_BG);
-        tableSection.setMaximumSize(new Dimension(800, 300));
-        tableSection.setPreferredSize(new Dimension(800, 300));
-        tableSection.setBorder(BorderFactory.createLineBorder(BORDER));
+        tableSection.setBackground(UITheme.BG_CARD);
+        tableSection.setMaximumSize(new Dimension(900, 350));
+        tableSection.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(UITheme.BORDER),
+            new EmptyBorder(0, 0, 0, 0)
+        ));
 
         JLabel tableTitle = new JLabel("Recent Orders");
-        tableTitle.setFont(new Font("Arial", Font.BOLD, 14));
-        tableTitle.setForeground(TEXT_DARK);
-        tableTitle.setBorder(new EmptyBorder(16, 16, 16, 16));
+        tableTitle.setFont(UITheme.FONT_SUBTITLE);
+        tableTitle.setForeground(UITheme.TEXT_DARK);
+        tableTitle.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         String[] cols = {"ID", "Customer", "Amount", "Status"};
         Object[][] data = {
-            {"#001", "Nguyen Van A", "50.000", "Pending"},
-            {"#002", "Tran Thi B", "75.000", "Completed"},
-            {"#003", "Le Van C", "120.000", "Completed"}
+            {"#001", "Nguyen Van A", "50.000", "⏳ Pending"},
+            {"#002", "Tran Thi B", "75.000", "✅ Completed"},
+            {"#003", "Le Van C", "120.000", "✅ Completed"}
         };
 
         JTable table = new JTable(data, cols);
-        table.setFont(new Font("Arial", Font.PLAIN, 12));
-        table.setRowHeight(30);
-        table.setGridColor(BORDER);
+        table.setFont(UITheme.FONT_BODY);
+        table.setBackground(UITheme.BG_CARD);
+        table.setForeground(UITheme.TEXT_DARK);
+        table.setRowHeight(40);
+        table.setGridColor(UITheme.BORDER);
         table.setShowGrid(true);
-        table.getTableHeader().setBackground(BG_COLOR);
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.getTableHeader().setBackground(UITheme.BG_MEDIUM);
+        table.getTableHeader().setForeground(UITheme.TEXT_DARK);
+        table.getTableHeader().setFont(UITheme.FONT_BODY);
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(UITheme.BG_CARD);
 
         tableSection.add(tableTitle, BorderLayout.NORTH);
         tableSection.add(scroll, BorderLayout.CENTER);
@@ -114,28 +112,38 @@ public class Dashboard extends JPanel {
         return content;
     }
 
-    private JPanel createStatCard(String title, String value, Color accent) {
+    private JPanel createStatCard(String title, String value, Color accent, String icon) {
         JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(CARD_BG);
+        card.setBackground(UITheme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER),
-            new EmptyBorder(16, 16, 16, 16)
+            BorderFactory.createLineBorder(UITheme.BORDER),
+            new EmptyBorder(20, 20, 20, 20)
         ));
 
+        // Icon
+        JLabel lblIcon = new JLabel(icon);
+        lblIcon.setFont(new Font("Segoe UI", Font.PLAIN, 32));
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(UITheme.BG_CARD);
+
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Arial", Font.PLAIN, 12));
-        lblTitle.setForeground(TEXT_GRAY);
+        lblTitle.setFont(UITheme.FONT_BODY);
+        lblTitle.setForeground(UITheme.TEXT_LIGHT);
+
+        topPanel.add(lblTitle, BorderLayout.NORTH);
+        topPanel.add(lblIcon, BorderLayout.EAST);
 
         JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Arial", Font.BOLD, 28));
+        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 32));
         lblValue.setForeground(accent);
+
+        card.add(topPanel, BorderLayout.NORTH);
+        card.add(lblValue, BorderLayout.CENTER);
 
         if (title.equals("Products")) lblProducts = lblValue;
         else if (title.equals("Orders")) lblOrders = lblValue;
         else if (title.equals("Revenue")) lblRevenue = lblValue;
-
-        card.add(lblTitle, BorderLayout.NORTH);
-        card.add(lblValue, BorderLayout.CENTER);
 
         return card;
     }

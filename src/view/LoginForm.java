@@ -1,24 +1,8 @@
 package view;
 
 import controller.AuthController;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import java.awt.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class LoginForm extends JFrame {
@@ -30,14 +14,6 @@ public class LoginForm extends JFrame {
 
     private final AuthController controller = new AuthController();
 
-    // Modern color palette (SaaS style)
-    private static final Color PRIMARY_COLOR = new Color(37, 99, 235);      // #2563EB
-    private static final Color SECONDARY_COLOR = new Color(59, 130, 246);   // #3B82F6
-    private static final Color BG_COLOR = new Color(248, 250, 252);         // #F8FAFC
-    private static final Color TEXT_COLOR = new Color(30, 41, 59);         // #1E293B
-    private static final Color BORDER_COLOR = new Color(226, 232, 240);    // #E2E8F0
-    private static final Color ERROR_COLOR = new Color(239, 68, 68);       // #EF4444
-
     public LoginForm() {
         initComponents();
         setupLayout();
@@ -46,42 +22,51 @@ public class LoginForm extends JFrame {
     }
 
     private void initComponents() {
-        setTitle("Đăng nhập");
-        setSize(400, 350);
+        setTitle("Coffee Shop - Login");
+        setSize(420, 480);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Main panel with background
-        JPanel mainPanel = new JPanel();
-        mainPanel.setBackground(BG_COLOR);
-        mainPanel.setBorder(new EmptyBorder(30, 40, 30, 40));
+        // Main panel with gradient
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                // Light gradient background
+                GradientPaint gp = new GradientPaint(0, 0, new Color(248, 250, 252), 0, getHeight(), new Color(241, 245, 249));
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        mainPanel.setBorder(new EmptyBorder(40, 50, 40, 50));
         setContentPane(mainPanel);
 
-        // Title
-        lblTitle = new JLabel("Chào mừng!");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(TEXT_COLOR);
+        // Welcome section
+        lblTitle = new JLabel("☕ Welcome!");
+        lblTitle.setFont(UITheme.FONT_HEADER);
+        lblTitle.setForeground(UITheme.PRIMARY);
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
 
         // Labels
-        lblUser = createLabel("Tên đăng nhập");
-        lblPass = createLabel("Mật khẩu");
+        lblUser = createLabel("Username");
+        lblPass = createLabel("Password");
 
-        // Error label
+        // Error
         lblError = new JLabel();
-        lblError.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblError.setForeground(ERROR_COLOR);
+        lblError.setFont(UITheme.FONT_SMALL);
+        lblError.setForeground(UITheme.DANGER);
         lblError.setHorizontalAlignment(SwingConstants.CENTER);
         lblError.setVisible(false);
 
-        // Text fields with styling
+        // Fields
         txtUser = createTextField();
         txtPass = createPasswordField();
 
         // Buttons
-        btnLogin = createButton("Đăng nhập", PRIMARY_COLOR, Color.WHITE);
-        btnRegister = createButton("Đăng ký", Color.WHITE, PRIMARY_COLOR);
+        btnLogin = createButton("Login", UITheme.PRIMARY, Color.WHITE);
+        btnRegister = createButton("Register", Color.WHITE, UITheme.PRIMARY);
     }
 
     private void setupLayout() {
@@ -97,52 +82,47 @@ public class LoginForm extends JFrame {
         gbc.gridwidth = 2;
         add(lblTitle, gbc);
 
-        // Username label
+        // Username
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 0, 4, 0);
+        gbc.insets = new Insets(24, 0, 4, 0);
         add(lblUser, gbc);
 
-        // Username field
         gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 12, 0);
         add(txtUser, gbc);
 
-        // Password label
+        // Password
         gbc.gridy = 3;
         gbc.insets = new Insets(0, 0, 4, 0);
         add(lblPass, gbc);
 
-        // Password field
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 8, 0);
         add(txtPass, gbc);
 
-        // Error message
+        // Error
         gbc.gridy = 5;
-        gbc.insets = new Insets(0, 0, 8, 0);
         add(lblError, gbc);
 
-        // Buttons panel
-        JPanel btnPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        // Buttons
+        JPanel btnPanel = new JPanel(new GridLayout(1, 2, 12, 0));
         btnPanel.setOpaque(false);
         btnPanel.add(btnLogin);
         btnPanel.add(btnRegister);
 
         gbc.gridy = 6;
-        gbc.insets = new Insets(16, 0, 0, 0);
+        gbc.insets = new Insets(20, 0, 0, 0);
         add(btnPanel, gbc);
     }
 
     private void setupListeners() {
-        // LOGIN
         btnLogin.addActionListener(e -> handleLogin());
-
-        // REGISTER
         btnRegister.addActionListener(e -> handleRegister());
-
-        // Enter key for login
         txtPass.addActionListener(e -> handleLogin());
+
+        // Hover effects
+        AnimationHelper.addHoverEffect(btnLogin);
+        AnimationHelper.addHoverEffect(btnRegister);
     }
 
     private void handleLogin() {
@@ -150,16 +130,16 @@ public class LoginForm extends JFrame {
         String pass = new String(txtPass.getPassword());
 
         if (user.isEmpty() || pass.isEmpty()) {
-            showError("Vui lòng nhập đầy đủ thông tin!");
+            showError("Please fill all fields!");
             return;
         }
 
         if (controller.login(user, pass)) {
-            JOptionPane.showMessageDialog(this, "Đăng nhập thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Login successful! 🎉", "Success", JOptionPane.INFORMATION_MESSAGE);
             new MainFrame();
             dispose();
         } else {
-            showError("Sai tài khoản hoặc mật khẩu!");
+            showError("Invalid username or password!");
             txtPass.setText("");
             txtPass.requestFocus();
         }
@@ -170,14 +150,14 @@ public class LoginForm extends JFrame {
         String pass = new String(txtPass.getPassword());
 
         if (user.isEmpty() || pass.isEmpty()) {
-            showError("Vui lòng nhập đầy đủ thông tin!");
+            showError("Please fill all fields!");
             return;
         }
 
         if (controller.register(user, pass)) {
-            JOptionPane.showMessageDialog(this, "Đăng ký thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Registration successful! 🎉", "Success", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            showError("Tên đăng nhập đã tồn tại!");
+            showError("Username already exists!");
             txtUser.requestFocus();
         }
     }
@@ -187,60 +167,49 @@ public class LoginForm extends JFrame {
         lblError.setVisible(true);
     }
 
-    // --- Component Factories ---
-
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        label.setForeground(TEXT_COLOR);
+        label.setFont(UITheme.FONT_BODY);
+        label.setForeground(UITheme.TEXT_MEDIUM);
         return label;
     }
 
     private JTextField createTextField() {
         JTextField field = new JTextField(20);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setFont(UITheme.FONT_BODY);
+        field.setBackground(UITheme.BG_LIGHT);
+        field.setForeground(UITheme.TEXT_DARK);
         field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(10, 12, 10, 12)
+            BorderFactory.createLineBorder(UITheme.BORDER, 1),
+            new EmptyBorder(12, 14, 12, 14)
         ));
-        field.setBackground(Color.WHITE);
         return field;
     }
 
     private JPasswordField createPasswordField() {
         JPasswordField field = new JPasswordField(20);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setFont(UITheme.FONT_BODY);
+        field.setBackground(UITheme.BG_LIGHT);
+        field.setForeground(UITheme.TEXT_DARK);
         field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(10, 12, 10, 12)
+            BorderFactory.createLineBorder(UITheme.BORDER, 1),
+            new EmptyBorder(12, 14, 12, 14)
         ));
-        field.setBackground(Color.WHITE);
         return field;
     }
 
     private JButton createButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(UITheme.FONT_BUTTON);
         btn.setBackground(bg);
         btn.setForeground(fg);
         btn.setFocusPainted(false);
         btn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(bg.equals(PRIMARY_COLOR) ? PRIMARY_COLOR : BORDER_COLOR, 1),
-            new EmptyBorder(10, 20, 10, 20)
+            BorderFactory.createLineBorder(bg.equals(UITheme.PRIMARY) ? UITheme.PRIMARY : UITheme.BORDER, 1),
+            new EmptyBorder(12, 24, 12, 24)
         ));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setOpaque(true);
-
-        // Hover effect
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bg.equals(PRIMARY_COLOR) ? SECONDARY_COLOR : new Color(248, 250, 252));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bg);
-            }
-        });
-
         return btn;
     }
 
