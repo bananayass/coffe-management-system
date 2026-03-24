@@ -1,18 +1,18 @@
 package view;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
  * Animation Utilities for Swing
- * Currently disabled - simple hover color change only
  */
 public class AnimationHelper {
 
     /**
-     * Add simple hover effect (color change only, no scaling)
+     * Add simple hover effect (color change only)
      */
     public static void addHoverEffect(JButton button) {
         Color normalColor = button.getBackground();
@@ -78,12 +78,12 @@ public class AnimationHelper {
     public static JPanel createToast(String message, Color bgColor) {
         JPanel toast = new JPanel(new BorderLayout());
         toast.setBackground(bgColor);
-        toast.setBorder(RoundedBorder.createWithPadding(8, new Color(0, 0, 0, 50), 12));
+        toast.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
 
         JLabel label = new JLabel(message);
         label.setForeground(Color.WHITE);
         label.setFont(UITheme.FONT_BODY);
-        label.setBorder(new javax.swing.border.EmptyBorder(8, 16, 8, 16));
+        label.setBorder(new EmptyBorder(8, 16, 8, 16));
 
         toast.add(label, BorderLayout.CENTER);
 

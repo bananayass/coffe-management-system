@@ -4,7 +4,9 @@ public class Product {
     private int id;
     private String name;
     private String category;
+    private String description;
     private double price;
+    private double costPrice;
     private int stockQuantity;
 
     public Product() {}
@@ -31,4 +33,10 @@ public class Product {
 
     public int getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public double getCostPrice() { return costPrice; }
+    public void setCostPrice(double costPrice) { this.costPrice = costPrice; }
 }

@@ -8,13 +8,13 @@ import javax.swing.border.EmptyBorder;
 
 public class MainFrame extends JFrame {
     private JPanel contentPanel;
-    private JLabel lblDashboard, lblProducts, lblOrders, lblRevenue;
+    private JLabel lblDashboard, lblOrders, lblProducts, lblCustomers, lblTables, lblDiscounts, lblStaff, lblInventory, lblReports, lblSettings, lblRevenue;
     private String currentPage = "Dashboard";
     private ThemeToggle themeToggle;
 
     public MainFrame() {
         setTitle("Coffee Shop Management");
-        setSize(1280, 800);
+        setSize(1400, 900);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -55,7 +55,7 @@ public class MainFrame extends JFrame {
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
         logoPanel.setBackground(UITheme.BG_DARK);
 
-        JLabel logo = new JLabel("☕ Coffee");
+        JLabel logo = new JLabel("Coffee Shop");
         logo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         logo.setForeground(UITheme.PRIMARY);
 
@@ -80,26 +80,64 @@ public class MainFrame extends JFrame {
         menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
         menu.setBackground(UITheme.BG_DARK);
 
-        lblDashboard = createMenuItem("📊 Dashboard", true);
-        lblProducts = createMenuItem("📦 Products", false);
-        lblOrders = createMenuItem("🛒 Orders", false);
-        lblRevenue = createMenuItem("💰 Revenue", false);
+        // Main menu
+        lblDashboard = createMenuItem("Dashboard", true);
+        lblOrders = createMenuItem("Orders", false);
+        lblProducts = createMenuItem("Products", false);
 
         lblDashboard.addMouseListener(createNavClick(lblDashboard, "Dashboard"));
-        lblProducts.addMouseListener(createNavClick(lblProducts, "Products"));
         lblOrders.addMouseListener(createNavClick(lblOrders, "Orders"));
-        lblRevenue.addMouseListener(createNavClick(lblRevenue, "Revenue"));
+        lblProducts.addMouseListener(createNavClick(lblProducts, "Products"));
 
         menu.add(lblDashboard);
-        menu.add(lblProducts);
         menu.add(lblOrders);
+        menu.add(lblProducts);
+
+        // Section label
+        JLabel lblManagement = createSectionLabel("MANAGEMENT");
+        menu.add(Box.createVerticalStrut(16));
+        menu.add(lblManagement);
+
+        lblCustomers = createMenuItem("Customers", false);
+        lblTables = createMenuItem("Tables", false);
+        lblDiscounts = createMenuItem("Discounts", false);
+        lblStaff = createMenuItem("Staff", false);
+        lblInventory = createMenuItem("Inventory", false);
+
+        lblCustomers.addMouseListener(createNavClick(lblCustomers, "Customers"));
+        lblTables.addMouseListener(createNavClick(lblTables, "Tables"));
+        lblDiscounts.addMouseListener(createNavClick(lblDiscounts, "Discounts"));
+        lblStaff.addMouseListener(createNavClick(lblStaff, "Staff"));
+        lblInventory.addMouseListener(createNavClick(lblInventory, "Inventory"));
+
+        menu.add(lblCustomers);
+        menu.add(lblTables);
+        menu.add(lblDiscounts);
+        menu.add(lblStaff);
+        menu.add(lblInventory);
+
+        // Section label
+        JLabel lblAnalytics = createSectionLabel("ANALYTICS");
+        menu.add(Box.createVerticalStrut(16));
+        menu.add(lblAnalytics);
+
+        lblReports = createMenuItem("Reports", false);
+        lblRevenue = createMenuItem("Revenue", false);
+        lblSettings = createMenuItem("Settings", false);
+
+        lblReports.addMouseListener(createNavClick(lblReports, "Reports"));
+        lblRevenue.addMouseListener(createNavClick(lblRevenue, "Revenue"));
+        lblSettings.addMouseListener(createNavClick(lblSettings, "Settings"));
+
+        menu.add(lblReports);
         menu.add(lblRevenue);
+        menu.add(lblSettings);
 
         // Spacer
         menu.add(Box.createVerticalGlue());
 
         // Logout
-        JLabel lblLogout = createMenuItem("🚪 Logout", false);
+        JLabel lblLogout = createMenuItem("Logout", false);
         lblLogout.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -118,14 +156,22 @@ public class MainFrame extends JFrame {
         return sidebar;
     }
 
+    private JLabel createSectionLabel(String text) {
+        JLabel label = new JLabel("  " + text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        label.setForeground(new Color(100, 116, 139));
+        label.setMaximumSize(new Dimension(UITheme.SIDEBAR_WIDTH, 24));
+        return label;
+    }
+
     private JLabel createMenuItem(String text, boolean active) {
         JLabel item = new JLabel("  " + text);
         item.setFont(UITheme.FONT_BODY);
         item.setForeground(active ? Color.WHITE : new Color(148, 163, 184));
         item.setOpaque(true);
         item.setBackground(active ? UITheme.PRIMARY : UITheme.BG_DARK);
-        item.setMaximumSize(new Dimension(UITheme.SIDEBAR_WIDTH, 48));
-        item.setPreferredSize(new Dimension(UITheme.SIDEBAR_WIDTH, 48));
+        item.setMaximumSize(new Dimension(UITheme.SIDEBAR_WIDTH, 44));
+        item.setPreferredSize(new Dimension(UITheme.SIDEBAR_WIDTH, 44));
         item.setBorder(new EmptyBorder(0, 24, 0, 24));
         item.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -177,50 +223,80 @@ public class MainFrame extends JFrame {
         currentPage = page;
 
         // Reset all menu items
-        lblDashboard.setBackground(UITheme.BG_DARK);
-        lblDashboard.setForeground(new Color(148, 163, 184));
-        lblProducts.setBackground(UITheme.BG_DARK);
-        lblProducts.setForeground(new Color(148, 163, 184));
-        lblOrders.setBackground(UITheme.BG_DARK);
-        lblOrders.setForeground(new Color(148, 163, 184));
-        lblRevenue.setBackground(UITheme.BG_DARK);
-        lblRevenue.setForeground(new Color(148, 163, 184));
+        resetMenuItem(lblDashboard);
+        resetMenuItem(lblOrders);
+        resetMenuItem(lblProducts);
+        resetMenuItem(lblCustomers);
+        resetMenuItem(lblTables);
+        resetMenuItem(lblDiscounts);
+        resetMenuItem(lblStaff);
+        resetMenuItem(lblInventory);
+        resetMenuItem(lblReports);
+        resetMenuItem(lblRevenue);
+        resetMenuItem(lblSettings);
 
-        // Highlight active
+        // Highlight active and show panel
         switch (page) {
             case "Dashboard":
-                lblDashboard.setBackground(UITheme.PRIMARY);
-                lblDashboard.setForeground(Color.WHITE);
+                setActive(lblDashboard);
                 showDashboard();
                 break;
-            case "Products":
-                lblProducts.setBackground(UITheme.PRIMARY);
-                lblProducts.setForeground(Color.WHITE);
-                showProducts();
-                break;
             case "Orders":
-                lblOrders.setBackground(UITheme.PRIMARY);
-                lblOrders.setForeground(Color.WHITE);
+                setActive(lblOrders);
                 showOrders();
                 break;
+            case "Products":
+                setActive(lblProducts);
+                showProducts();
+                break;
+            case "Customers":
+                setActive(lblCustomers);
+                showCustomers();
+                break;
+            case "Tables":
+                setActive(lblTables);
+                showTables();
+                break;
+            case "Discounts":
+                setActive(lblDiscounts);
+                showDiscounts();
+                break;
+            case "Staff":
+                setActive(lblStaff);
+                showStaff();
+                break;
+            case "Inventory":
+                setActive(lblInventory);
+                showInventory();
+                break;
+            case "Reports":
+                setActive(lblReports);
+                showReports();
+                break;
             case "Revenue":
-                lblRevenue.setBackground(UITheme.PRIMARY);
-                lblRevenue.setForeground(Color.WHITE);
+                setActive(lblRevenue);
                 showRevenue();
                 break;
+            case "Settings":
+                setActive(lblSettings);
+                showSettings();
+                break;
         }
+    }
+
+    private void resetMenuItem(JLabel label) {
+        label.setBackground(UITheme.BG_DARK);
+        label.setForeground(new Color(148, 163, 184));
+    }
+
+    private void setActive(JLabel label) {
+        label.setBackground(UITheme.PRIMARY);
+        label.setForeground(Color.WHITE);
     }
 
     private void showDashboard() {
         contentPanel.removeAll();
         contentPanel.add(new Dashboard(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    private void showProducts() {
-        contentPanel.removeAll();
-        contentPanel.add(new ProductPanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
@@ -232,9 +308,65 @@ public class MainFrame extends JFrame {
         contentPanel.repaint();
     }
 
+    private void showProducts() {
+        contentPanel.removeAll();
+        contentPanel.add(new ProductPanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showCustomers() {
+        contentPanel.removeAll();
+        contentPanel.add(new CustomerPanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showTables() {
+        contentPanel.removeAll();
+        contentPanel.add(new TablePanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showDiscounts() {
+        contentPanel.removeAll();
+        contentPanel.add(new DiscountPanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showStaff() {
+        contentPanel.removeAll();
+        contentPanel.add(new StaffPanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showInventory() {
+        contentPanel.removeAll();
+        contentPanel.add(new InventoryPanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showReports() {
+        contentPanel.removeAll();
+        contentPanel.add(new ReportsPanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
     private void showRevenue() {
         contentPanel.removeAll();
         contentPanel.add(new RevenuePanel(), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showSettings() {
+        contentPanel.removeAll();
+        contentPanel.add(new SettingsPanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }

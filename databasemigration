@@ -5,12 +5,44 @@ CREATE DATABASE IF NOT EXISTS coffee_db;
 USE coffee_db;
 
 -- =========================
--- USERS (LOGIN)
+-- USERS (STAFF)
 -- =========================
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE,
-    password VARCHAR(100)
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    full_name VARCHAR(100),
+    role VARCHAR(20) DEFAULT 'cashier',
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
+-- CUSTOMERS
+-- =========================
+CREATE TABLE customers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    loyalty_points INT DEFAULT 0,
+    total_spent DOUBLE DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- =========================
+-- TABLES
+-- =========================
+CREATE TABLE tables (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    table_number VARCHAR(20) UNIQUE,
+    capacity INT DEFAULT 4,
+    status VARCHAR(20) DEFAULT 'available',
+    position_x INT DEFAULT 0,
+    position_y INT DEFAULT 0
 );
 
 -- =========================
@@ -18,77 +50,227 @@ CREATE TABLE users (
 -- =========================
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100),
+    name VARCHAR(100) NOT NULL,
     category VARCHAR(50),
-    price DOUBLE,
-    stock_quantity INT
+    description TEXT,
+    price DOUBLE NOT NULL,
+    cost_price DOUBLE DEFAULT 0,
+    stock_quantity INT DEFAULT 0,
+    image_url VARCHAR(255),
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================
--- ORDERS (HOA DON)
+-- PRODUCT VARIANTS
 -- =========================
-CREATE TABLE orders (
+CREATE TABLE product_variants (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20),
-    total_amount DOUBLE,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
--- =========================
--- ORDER ITEMS (CHI TIET HOA DON)
--- =========================
-CREATE TABLE order_items (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT,
-    product_id INT,
-    quantity INT,
-    unit_price DOUBLE,
-    FOREIGN KEY (order_id) REFERENCES orders(id),
+    product_id INT NOT NULL,
+    variant_name VARCHAR(50),
+    size VARCHAR(10),
+    sugar_level VARCHAR(20),
+    ice_level VARCHAR(20),
+    price_modifier DOUBLE DEFAULT 0,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 -- =========================
--- INVENTORY (TON KHO)
+-- DISCOUNTS/PROMOTIONS
+-- =========================
+CREATE TABLE discounts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(50) UNIQUE,
+    description TEXT,
+    discount_type VARCHAR(20),
+    discount_value DOUBLE,
+    min_order_amount DOUBLE DEFAULT 0,
+    max_uses INT,
+    used_count INT DEFAULT 0,
+    start_date DATE,
+    end_date DATE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- =========================
+-- ORDERS
+-- =========================
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_number VARCHAR(50) UNIQUE,
+    user_id INT,
+    customer_id INT,
+    table_id INT,
+    order_type VARCHAR(20) DEFAULT 'dine-in',
+    status VARCHAR(20) DEFAULT 'pending',
+    subtotal DOUBLE,
+    discount_amount DOUBLE DEFAULT 0,
+    tax_amount DOUBLE DEFAULT 0,
+    total_amount DOUBLE,
+    payment_method VARCHAR(20) DEFAULT 'cash',
+    notes TEXT,
+    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (table_id) REFERENCES tables(id)
+);
+
+-- =========================
+-- ORDER ITEMS
+-- =========================
+CREATE TABLE order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    variant_id INT,
+    quantity INT NOT NULL,
+    unit_price DOUBLE NOT NULL,
+    discount_amount DOUBLE DEFAULT 0,
+    total_price DOUBLE,
+    notes TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id)
+);
+
+-- =========================
+-- INVENTORY TRANSACTIONS
 -- =========================
 CREATE TABLE inventory_transactions (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id INT,
+    product_id INT NOT NULL,
+    transaction_type VARCHAR(20),
     quantity_change INT,
+    quantity_after INT,
+    reason TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 -- =========================
--- SAMPLE DATA (TEST)
+-- INVENTORY ALERTS
 -- =========================
-INSERT INTO users (username, password) VALUES
-('admin', '123'),
-('staff', '123');
-
-INSERT INTO products (name, category, price, stock_quantity) VALUES
-('Cà phê đen', 'coffee', 20000, 50),
-('Cà phê sữa', 'coffee', 25000, 50),
-('Trà đào', 'tea', 30000, 30),
-('Bánh ngọt', 'food', 15000, 20);
+CREATE TABLE inventory_alerts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    alert_type VARCHAR(20),
+    threshold_quantity INT,
+    is_resolved BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    resolved_at DATETIME,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
 
 -- =========================
--- TEST ORDER
+-- SETTINGS
 -- =========================
-INSERT INTO orders (user_id, status, total_amount)
-VALUES (1, 'pending', 0);
+CREATE TABLE settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    setting_key VARCHAR(50) UNIQUE,
+    setting_value TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
-INSERT INTO order_items (order_id, product_id, quantity, unit_price)
-VALUES 
-(1, 1, 2, 20000),
-(1, 2, 1, 25000);
+-- =========================
+-- SAMPLE DATA
+-- =========================
 
--- UPDATE TOTAL
-UPDATE orders
-SET total_amount = (
-    SELECT SUM(quantity * unit_price)
-    FROM order_items
-    WHERE order_id = 1
-)
-WHERE id = 1;
+-- Users
+INSERT INTO users (username, password, full_name, role, phone, email) VALUES
+('admin', '123', 'Nguyen Van A', 'admin', '0901234567', 'admin@coffee.com'),
+('manager', '123', 'Tran Van B', 'manager', '0901234568', 'manager@coffee.com'),
+('cashier', '123', 'Le Thi C', 'cashier', '0901234569', 'cashier@coffee.com'),
+('barista', '123', 'Pham Van D', 'barista', '0901234570', 'barista@coffee.com');
+
+-- Customers
+INSERT INTO customers (name, phone, email, loyalty_points) VALUES
+('Khach vip 1', '0911111111', 'vip1@email.com', 500),
+('Khach vip 2', '0912222222', 'vip2@email.com', 300),
+('Khach hang', '0913333333', 'khachhang@email.com', 0);
+
+-- Tables
+INSERT INTO tables (table_number, capacity, status) VALUES
+('T1', 4, 'available'),
+('T2', 4, 'available'),
+('T3', 6, 'available'),
+('T4', 2, 'available'),
+('T5', 8, 'available'),
+('T6', 4, 'occupied'),
+('T7', 4, 'reserved'),
+('T8', 6, 'available');
+
+-- Products
+INSERT INTO products (name, category, description, price, cost_price, stock_quantity) VALUES
+-- Coffee
+('Cà phê đen', 'coffee', 'Cà phê rang mộc truyền thống', 20000, 8000, 100),
+('Cà phê sữa', 'coffee', 'Cà phê với sữa đặc', 25000, 10000, 100),
+('Cà phê muối', 'coffee', 'Cà phê với muối biển', 28000, 11000, 50),
+('Cà phê bạc xỉu', 'coffee', 'Cà phê pha chế kiểu Việt', 25000, 10000, 80),
+('Americano', 'coffee', 'Espresso với nước', 30000, 12000, 60),
+('Latte', 'coffee', 'Cà phê với sữa tươi', 35000, 14000, 50),
+('Cappuccino', 'coffee', 'Cà phê với bọt sữa', 35000, 14000, 50),
+('Mocha', 'coffee', 'Cà phê chocolate', 38000, 15000, 40),
+
+-- Tea
+('Trà đào', 'tea', 'Trà với đào', 30000, 12000, 40),
+('Trà vải', 'tea', 'Trà với vải', 30000, 12000, 40),
+('Trà chanh', 'tea', 'Trà chanh tươi', 25000, 10000, 50),
+('Trà sen', 'tea', 'Trà hoa sen', 28000, 11000, 30),
+('Trà xanh', 'tea', 'Trà xanh truyền thống', 25000, 10000, 45),
+
+-- Juice
+('Nước cam', 'juice', 'Nước ép cam tươi', 30000, 12000, 30),
+('Nước ép táo', 'juice', 'Nước ép táo', 30000, 12000, 30),
+('Sinh tố bơ', 'juice', 'Sinh tố bơ', 35000, 14000, 25),
+('Sinh tố xoài', 'juice', 'Sinh tố xoài', 32000, 13000, 25),
+
+-- Food
+('Bánh mì', 'food', 'Bánh mì bơ tỏi', 15000, 5000, 30),
+('Bánh ngọt', 'food', 'Bánh ngọt various', 20000, 8000, 20),
+('Bánh tiramisu', 'food', 'Bánh tiramisu', 35000, 15000, 15),
+('Croissant', 'food', 'Bánh croissant', 25000, 10000, 20),
+('Cookie', 'food', 'Bánh cookie', 15000, 5000, 25),
+
+-- Extra
+('Nước suối', 'other', 'Nước suối đóng chai', 10000, 3000, 100),
+('Coca cola', 'other', 'Nước ngọt', 15000, 5000, 50),
+('Trà lipton', 'other', 'Trà đóng chai', 15000, 5000, 40);
+
+-- Discounts
+INSERT INTO discounts (code, description, discount_type, discount_value, min_order_amount, max_uses, start_date, end_date) VALUES
+('WELCOME10', 'Chào mừng khách mới', 'percentage', 10, 50000, 100, '2024-01-01', '2024-12-31'),
+('SUMMER20', 'Khuyến mãa hè', 'percentage', 20, 100000, 50, '2024-06-01', '2024-08-31'),
+('VIP50', 'Khách VIP giảm 50k', 'fixed', 50000, 200000, 20, '2024-01-01', '2024-12-31'),
+('FREESHIP', 'Miễn phí vận chuyển', 'percentage', 100, 100000, 999, '2024-01-01', '2024-12-31');
+
+-- Settings
+INSERT INTO settings (setting_key, setting_value) VALUES
+('shop_name', 'Coffee Shop'),
+('shop_address', '123 Đường Nguyễn Trãi, Quận 1, TP.HCM'),
+('shop_phone', '0901234567'),
+('tax_rate', '8'),
+('currency', 'VND'),
+('low_stock_threshold', '10');
+
+-- Sample Orders
+INSERT INTO orders (order_number, user_id, customer_id, table_id, order_type, status, subtotal, discount_amount, tax_amount, total_amount, payment_method, order_date) VALUES
+('ORD001', 1, 1, 1, 'dine-in', 'completed', 90000, 0, 7200, 97200, 'cash', '2024-03-20 10:30:00'),
+('ORD002', 2, 2, 2, 'dine-in', 'completed', 65000, 5000, 4800, 64800, 'card', '2024-03-20 11:00:00'),
+('ORD003', 1, NULL, NULL, 'takeout', 'completed', 55000, 0, 4400, 59400, 'cash', '2024-03-20 14:00:00'),
+('ORD004', 3, NULL, 3, 'dine-in', 'pending', 120000, 10000, 8800, 118800, 'cash', '2024-03-21 09:00:00');
+
+-- Sample Order Items
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, total_price) VALUES
+(1, 1, 2, 20000, 40000),
+(1, 2, 1, 25000, 25000),
+(1, 10, 1, 25000, 25000),
+(2, 2, 2, 25000, 50000),
+(2, 9, 1, 15000, 15000),
+(3, 1, 1, 20000, 20000),
+(3, 6, 1, 35000, 35000),
+(4, 7, 2, 35000, 70000),
+(4, 11, 2, 25000, 50000);
+
+-- Update order totals
+UPDATE orders SET total_amount = subtotal - discount_amount + tax_amount WHERE id > 0;

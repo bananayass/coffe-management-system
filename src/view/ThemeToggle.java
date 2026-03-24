@@ -13,7 +13,7 @@ public class ThemeToggle extends JButton {
     private static boolean isDarkMode = false;
 
     public ThemeToggle() {
-        setText(isDarkMode ? "☀️ Light" : "🌙 Dark");
+        setText(isDarkMode ? "Light Mode" : "Dark Mode");
         setFont(UITheme.FONT_SMALL);
         setForeground(UITheme.TEXT_DARK);
         setBackground(UITheme.BG_MEDIUM);
@@ -34,7 +34,7 @@ public class ThemeToggle extends JButton {
             applyLightMode();
         }
 
-        setText(isDarkMode ? "☀️ Light" : "🌙 Dark");
+        setText(isDarkMode ? "Light Mode" : "Dark Mode");
 
         // Notify all windows to refresh
         for (Window w : Window.getWindows()) {

@@ -24,6 +24,7 @@ public class OrderPanel extends JPanel {
     private JList<String> cartList;
     private JLabel lblTotal, lblOrderCount;
     private int currentOrderId = -1;
+    private JPanel gridPanel;
 
     public OrderPanel() {
         setLayout(new BorderLayout());
@@ -72,13 +73,13 @@ public class OrderPanel extends JPanel {
             }
         } catch (Exception e) { e.printStackTrace(); }
 
-        JPanel grid = new JPanel(new GridLayout(0, 3, 12, 12));
-        grid.setBorder(new EmptyBorder(0, 16, 16, 16));
-        grid.setBackground(UITheme.BG_COLOR);
+        gridPanel = new JPanel(new GridLayout(0, 3, 12, 12));
+        gridPanel.setBorder(new EmptyBorder(0, 16, 16, 16));
+        gridPanel.setBackground(UITheme.BG_COLOR);
 
-        loadProductsGrid(grid, "");
+        loadProductsGrid(gridPanel, "");
 
-        JScrollPane scroll = new JScrollPane(grid);
+        JScrollPane scroll = new JScrollPane(gridPanel);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(UITheme.BG_COLOR);
 
@@ -112,35 +113,15 @@ public class OrderPanel extends JPanel {
     }
 
     private void filterProducts(String category) {
-        // Simply reload - the grid is inside the scroll pane
-        Component[] comps = getComponents();
-        for (Component c : comps) {
-            if (c instanceof JSplitPane) {
-                JSplitPane split = (JSplitPane) c;
-                Component left = split.getLeftComponent();
-                if (left instanceof JPanel) {
-                    JPanel panel = (JPanel) left;
-                    Component[] innerComps = panel.getComponents();
-                    for (Component ic : innerComps) {
-                        if (ic instanceof JScrollPane) {
-                            JScrollPane scroll = (JScrollPane) ic;
-                            if (scroll.getViewport().getView() instanceof JPanel) {
-                                JPanel gridPanel = (JPanel) scroll.getViewport().getView();
-                                loadProductsGrid(gridPanel, category);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // Simply reload the grid panel directly
+        loadProductsGrid(gridPanel, category);
     }
 
     private JPanel createProductCard(Product p) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(UITheme.BG_MEDIUM);
         card.setBorder(RoundedBorder.create(8, UITheme.BG_MEDIUM));
-        card.setPreferredSize(new Dimension(160, 120));
+        card.setPreferredSize(new Dimension(180, 150));
 
         JPanel info = new JPanel();
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
@@ -167,6 +148,7 @@ public class OrderPanel extends JPanel {
         info.add(category);
         info.add(Box.createVerticalStrut(4));
         info.add(price);
+        info.add(Box.createVerticalStrut(4));
         info.add(stock);
 
         JButton addBtn = new JButton("Add");

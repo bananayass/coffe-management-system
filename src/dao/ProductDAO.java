@@ -127,4 +127,15 @@ public class ProductDAO {
         }
         return list;
     }
+
+    // Update stock quantity
+    public boolean updateStock(int productId, int newQuantity) throws Exception {
+        String sql = "UPDATE products SET stock_quantity = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newQuantity);
+            ps.setInt(2, productId);
+            return ps.executeUpdate() > 0;
+        }
+    }
 }
