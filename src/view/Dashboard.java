@@ -1,24 +1,26 @@
 package view;
 
+import dao.CustomerDAO;
 import dao.DBConnection;
+import dao.OrderDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.RenderingHints;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
@@ -27,8 +29,14 @@ import javax.swing.border.EmptyBorder;
 public class Dashboard extends JPanel {
 
     private JLabel lblProducts, lblOrders, lblRevenue, lblCustomers;
+    private MainFrame mainFrame; // Reference to navigate
 
     public Dashboard() {
+        this(null);
+    }
+
+    public Dashboard(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
         setBackground(UITheme.BG_COLOR);
 
@@ -66,15 +74,15 @@ public class Dashboard extends JPanel {
         stats.setMaximumSize(new Dimension(1100, 110));
         stats.setBorder(new EmptyBorder(28, 0, 28, 0));
 
-        stats.add(createStatCard("Total Products", "0", UITheme.PRIMARY, UITheme.PRIMARY_LIGHT));
-        stats.add(createStatCard("Total Orders", "0", UITheme.SUCCESS, new Color(34, 197, 94)));
-        stats.add(createStatCard("Revenue", "0 VND", UITheme.WARNING, new Color(245, 158, 11)));
-        stats.add(createStatCard("Customers", "0", UITheme.INFO, new Color(59, 130, 246)));
+        stats.add(createStatCard("Total Products", "0", UITheme.PRIMARY));
+        stats.add(createStatCard("Total Orders", "0", UITheme.SUCCESS));
+        stats.add(createStatCard("Revenue", "0 VND", UITheme.WARNING));
+        stats.add(createStatCard("Customers", "0", UITheme.INFO));
 
         // Two column layout for bottom section
         JPanel bottomRow = new JPanel(new GridLayout(1, 2, 20, 0));
         bottomRow.setBackground(UITheme.BG_COLOR);
-        bottomRow.setMaximumSize(new Dimension(1100, 300));
+        bottomRow.setMaximumSize(new Dimension(1100, 320));
 
         bottomRow.add(createActivityPanel());
         bottomRow.add(createQuickActionsPanel());
@@ -86,52 +94,38 @@ public class Dashboard extends JPanel {
         return content;
     }
 
-    private JPanel createStatCard(String title, String value, Color accent, Color lightAccent) {
-        JPanel card = new JPanel(new BorderLayout());
+    private JPanel createStatCard(String title, String value, Color accentColor) {
+        JPanel card = new JPanel(new BorderLayout(12, 0));
         card.setBackground(UITheme.BG_CARD);
-
-        // Subtle shadow effect using compound border
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(UITheme.BORDER),
-            new EmptyBorder(20, 24, 20, 24)
+            BorderFactory.createEmptyBorder(16, 16, 16, 16)
         ));
 
-        // Top section: Icon circle + title
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(UITheme.BG_CARD);
+        // Icon with solid background
+        JPanel iconPanel = new JPanel();
+        iconPanel.setBackground(accentColor);
+        iconPanel.setPreferredSize(new Dimension(40, 40));
+        iconPanel.setLayout(new BorderLayout());
 
-        // Colored circle icon
-        JPanel iconCircle = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(lightAccent);
-                g2.fillOval(0, 0, getWidth(), getHeight());
-                g2.dispose();
-            }
-        };
-        iconCircle.setPreferredSize(new Dimension(36, 36));
-        iconCircle.setOpaque(false);
-
-        // Icon label centered in circle
-        JLabel lblIcon = new JLabel(getIconEmoji(title));
-        lblIcon.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JLabel lblIcon = new JLabel(getIconText(title));
+        lblIcon.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblIcon.setForeground(Color.WHITE);
         lblIcon.setHorizontalAlignment(SwingConstants.CENTER);
-        iconCircle.setLayout(new BorderLayout());
-        iconCircle.add(lblIcon, BorderLayout.CENTER);
+        iconPanel.add(lblIcon, BorderLayout.CENTER);
 
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblTitle.setForeground(UITheme.TEXT_LIGHT);
 
-        topPanel.add(iconCircle, BorderLayout.WEST);
-        topPanel.add(lblTitle, BorderLayout.CENTER);
-
-        // Value
         JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblValue.setForeground(UITheme.TEXT_DARK);
+
+        JPanel topPanel = new JPanel(new BorderLayout(10, 0));
+        topPanel.setBackground(UITheme.BG_CARD);
+        topPanel.add(iconPanel, BorderLayout.WEST);
+        topPanel.add(lblTitle, BorderLayout.CENTER);
 
         card.add(topPanel, BorderLayout.NORTH);
         card.add(lblValue, BorderLayout.CENTER);
@@ -144,7 +138,7 @@ public class Dashboard extends JPanel {
         return card;
     }
 
-    private String getIconEmoji(String title) {
+    private String getIconText(String title) {
         switch (title) {
             case "Total Products": return "P";
             case "Total Orders": return "O";
@@ -159,13 +153,24 @@ public class Dashboard extends JPanel {
         card.setBackground(UITheme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(UITheme.BORDER),
-            new EmptyBorder(0, 0, 0, 0)
+            BorderFactory.createEmptyBorder(0, 0, 0, 0)
         ));
+
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(UITheme.BG_CARD);
+        titlePanel.setBorder(new EmptyBorder(20, 20, 16, 20));
 
         JLabel title = new JLabel("Recent Activity");
         title.setFont(new Font("Segoe UI", Font.BOLD, 16));
         title.setForeground(UITheme.TEXT_DARK);
-        title.setBorder(new EmptyBorder(20, 20, 16, 20));
+
+        JLabel viewAll = new JLabel("View All >");
+        viewAll.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        viewAll.setForeground(UITheme.PRIMARY);
+        viewAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        titlePanel.add(title, BorderLayout.WEST);
+        titlePanel.add(viewAll, BorderLayout.EAST);
 
         // Activity list
         JPanel listPanel = new JPanel();
@@ -173,11 +178,8 @@ public class Dashboard extends JPanel {
         listPanel.setBackground(UITheme.BG_CARD);
         listPanel.setBorder(new EmptyBorder(0, 20, 16, 20));
 
-        listPanel.add(createActivityItem("New order #001 placed", "2 min ago", UITheme.SUCCESS));
-        listPanel.add(createActivityItem("Product 'Coffee' updated", "15 min ago", UITheme.INFO));
-        listPanel.add(createActivityItem("New customer registered", "1 hour ago", UITheme.PRIMARY));
-        listPanel.add(createActivityItem("Order #002 completed", "2 hours ago", UITheme.SUCCESS));
-        listPanel.add(createActivityItem("Inventory low for 'Milk'", "3 hours ago", UITheme.WARNING));
+        // Load real data
+        loadActivityData(listPanel);
 
         JScrollPane scroll = new JScrollPane(listPanel);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -185,30 +187,74 @@ public class Dashboard extends JPanel {
         scroll.setBackground(UITheme.BG_CARD);
         scroll.getViewport().setBackground(UITheme.BG_CARD);
 
-        card.add(title, BorderLayout.NORTH);
+        card.add(titlePanel, BorderLayout.NORTH);
         card.add(scroll, BorderLayout.CENTER);
 
         return card;
     }
 
+    private void loadActivityData(JPanel listPanel) {
+        try {
+            OrderDAO orderDAO = new OrderDAO();
+            CustomerDAO customerDAO = new CustomerDAO();
+
+            // Get recent orders
+            List<Object[]> recentOrders = orderDAO.getRecentOrders(3);
+            for (Object[] order : recentOrders) {
+                int orderId = (int) order[0];
+                String status = (String) order[1];
+                double amount = (double) order[2];
+                Timestamp timestamp = (Timestamp) order[3];
+                String customerName = (String) order[4];
+
+                String desc = String.format("Order #%d - %s (%.0f VND)",
+                    orderId, customerName != null ? customerName : "Guest", amount);
+                Color dotColor = status.equals("completed") ? UITheme.SUCCESS :
+                                  status.equals("pending") ? UITheme.WARNING : UITheme.DANGER;
+
+                listPanel.add(createActivityItem(desc, formatTimeAgo(timestamp), dotColor));
+            }
+
+            // Get recent customers
+            List<Object[]> recentCustomers = customerDAO.getRecentCustomers(2);
+            for (Object[] customer : recentCustomers) {
+                int id = (int) customer[0];
+                String name = (String) customer[1];
+                Timestamp timestamp = (Timestamp) customer[3];
+
+                listPanel.add(createActivityItem("New customer: " + name, formatTimeAgo(timestamp), UITheme.INFO));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Fallback to mock data if error
+            listPanel.add(createActivityItem("Unable to load activity data", "Just now", UITheme.TEXT_LIGHT));
+        }
+    }
+
+    private String formatTimeAgo(Timestamp timestamp) {
+        if (timestamp == null) return "Just now";
+
+        long diff = System.currentTimeMillis() - timestamp.getTime();
+        long minutes = diff / 60000;
+        long hours = minutes / 60;
+        long days = hours / 24;
+
+        if (minutes < 1) return "Just now";
+        if (minutes < 60) return minutes + " min ago";
+        if (hours < 24) return hours + " hour" + (hours > 1 ? "s" : "") + " ago";
+        return days + " day" + (days > 1 ? "s" : "") + " ago";
+    }
+
     private JPanel createActivityItem(String title, String time, Color dotColor) {
         JPanel item = new JPanel(new BorderLayout(12, 0));
         item.setBackground(UITheme.BG_CARD);
-        item.setMaximumSize(new Dimension(500, 36));
+        item.setMaximumSize(new Dimension(500, 40));
 
         // Colored dot
-        JPanel dot = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(dotColor);
-                g2.fillOval(0, 0, 8, 8);
-                g2.dispose();
-            }
-        };
+        JPanel dot = new JPanel();
+        dot.setBackground(dotColor);
         dot.setPreferredSize(new Dimension(8, 8));
-        dot.setOpaque(false);
 
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -230,28 +276,33 @@ public class Dashboard extends JPanel {
         card.setBackground(UITheme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(UITheme.BORDER),
-            new EmptyBorder(0, 0, 0, 0)
+            BorderFactory.createEmptyBorder(0, 0, 0, 0)
         ));
+
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(UITheme.BG_CARD);
+        titlePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel title = new JLabel("Quick Actions");
         title.setFont(new Font("Segoe UI", Font.BOLD, 16));
         title.setForeground(UITheme.TEXT_DARK);
-        title.setBorder(new EmptyBorder(20, 20, 20, 20));
+        titlePanel.add(title, BorderLayout.WEST);
 
         JPanel actionsPanel = new JPanel();
         actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
         actionsPanel.setBackground(UITheme.BG_CARD);
         actionsPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
 
+        // Action buttons
         actionsPanel.add(createActionButton("Create New Order", UITheme.SUCCESS));
-        actionsPanel.add(Box.createVerticalStrut(12));
+        actionsPanel.add(Box.createVerticalStrut(10));
         actionsPanel.add(createActionButton("Add New Product", UITheme.PRIMARY));
-        actionsPanel.add(Box.createVerticalStrut(12));
+        actionsPanel.add(Box.createVerticalStrut(10));
         actionsPanel.add(createActionButton("Add New Customer", UITheme.INFO));
-        actionsPanel.add(Box.createVerticalStrut(12));
+        actionsPanel.add(Box.createVerticalStrut(10));
         actionsPanel.add(createActionButton("Manage Tables", new Color(139, 92, 246)));
 
-        card.add(title, BorderLayout.NORTH);
+        card.add(titlePanel, BorderLayout.NORTH);
         card.add(actionsPanel, BorderLayout.CENTER);
 
         return card;
@@ -263,26 +314,31 @@ public class Dashboard extends JPanel {
         btn.setForeground(Color.WHITE);
         btn.setBackground(color);
         btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(14, 20, 14, 20));
+        btn.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setMaximumSize(new Dimension(300, 48));
+        btn.setMaximumSize(new Dimension(400, 44));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btn.setHorizontalAlignment(SwingConstants.LEFT);
 
-        // Subtle hover effect
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            private final Color original = color;
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                btn.setBackground(color.darker());
-            }
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                btn.setBackground(original);
-            }
-        });
+        btn.addActionListener(e -> handleAction(text));
 
         return btn;
+    }
+
+    private void handleAction(String action) {
+        String page = "";
+        if (action.contains("Order")) page = "Orders";
+        else if (action.contains("Product")) page = "Products";
+        else if (action.contains("Customer")) page = "Customers";
+        else if (action.contains("Table")) page = "Tables";
+
+        if (mainFrame != null && !page.isEmpty()) {
+            mainFrame.navigateTo(page);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Navigating to: " + page,
+                "Quick Action",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private void loadData() {

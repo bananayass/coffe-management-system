@@ -191,4 +191,28 @@ public class OrderDAO {
         }
         return 0;
     }
+
+    // Get recent orders for activity feed
+    public List<Object[]> getRecentOrders(int limit) throws Exception {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT o.id, o.status, o.total_amount, o.order_date, c.name as customer_name " +
+            "FROM orders o LEFT JOIN customers c ON o.customer_id = c.id " +
+            "ORDER BY o.order_date DESC LIMIT ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("status"),
+                        rs.getDouble("total_amount"),
+                        rs.getTimestamp("order_date"),
+                        rs.getString("customer_name")
+                    });
+                }
+            }
+        }
+        return list;
+    }
 }

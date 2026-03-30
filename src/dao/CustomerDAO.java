@@ -162,6 +162,27 @@ public class CustomerDAO {
         return customers;
     }
 
+    // Get recent customers for activity feed
+    public List<Object[]> getRecentCustomers(int limit) throws Exception {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT id, name, phone, created_at FROM customers WHERE is_active = TRUE ORDER BY created_at DESC LIMIT ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("phone"),
+                        rs.getTimestamp("created_at")
+                    });
+                }
+            }
+        }
+        return list;
+    }
+
     private Customer mapResultSet(ResultSet rs) throws Exception {
         Customer c = new Customer();
         c.setId(rs.getInt("id"));

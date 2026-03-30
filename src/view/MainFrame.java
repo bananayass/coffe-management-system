@@ -210,7 +210,7 @@ public class MainFrame extends JFrame {
         };
     }
 
-    private void navigateTo(String page) {
+    public void navigateTo(String page) {
         currentPage = page;
 
         // Reset all menu items
@@ -272,7 +272,7 @@ public class MainFrame extends JFrame {
 
     private void showDashboard() {
         contentPanel.removeAll();
-        contentPanel.add(new Dashboard(), BorderLayout.CENTER);
+        contentPanel.add(new Dashboard(this), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
