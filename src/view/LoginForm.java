@@ -9,7 +9,9 @@ public class LoginForm extends JFrame {
 
     private JTextField txtUser;
     private JPasswordField txtPass;
+    private JPanel txtPassPanel;
     private JButton btnLogin, btnRegister;
+    private JButton btnTogglePass;
     private JLabel lblTitle, lblUser, lblPass, lblError;
 
     private final AuthController controller = new AuthController();
@@ -62,7 +64,7 @@ public class LoginForm extends JFrame {
 
         // Fields
         txtUser = createTextField();
-        txtPass = createPasswordField();
+        txtPassPanel = createPasswordField();
 
         // Buttons
         btnLogin = createButton("Login", UITheme.PRIMARY, Color.WHITE);
@@ -98,7 +100,7 @@ public class LoginForm extends JFrame {
 
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 8, 0);
-        add(txtPass, gbc);
+        add(txtPassPanel, gbc);
 
         // Error
         gbc.gridy = 5;
@@ -186,16 +188,46 @@ public class LoginForm extends JFrame {
         return field;
     }
 
-    private JPasswordField createPasswordField() {
-        JPasswordField field = new JPasswordField(20);
-        field.setFont(UITheme.FONT_BODY);
-        field.setBackground(UITheme.BG_LIGHT);
-        field.setForeground(UITheme.TEXT_DARK);
-        field.setBorder(BorderFactory.createCompoundBorder(
+    private JPanel createPasswordField() {
+        txtPass = new JPasswordField(20);
+        txtPass.setFont(UITheme.FONT_BODY);
+        txtPass.setBackground(UITheme.BG_LIGHT);
+        txtPass.setForeground(UITheme.TEXT_DARK);
+        txtPass.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(UITheme.BORDER, 1),
             new EmptyBorder(12, 14, 12, 14)
         ));
-        return field;
+
+        // Create a wrapper panel with show/hide button
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(UITheme.BG_LIGHT);
+
+        // Show/Hide button - using text labels
+        btnTogglePass = new JButton("Show");
+        btnTogglePass.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        btnTogglePass.setBackground(UITheme.BG_MEDIUM);
+        btnTogglePass.setForeground(UITheme.TEXT_MEDIUM);
+        btnTogglePass.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        btnTogglePass.setFocusPainted(false);
+        btnTogglePass.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnTogglePass.setToolTipText("Show password");
+
+        btnTogglePass.addActionListener(e -> {
+            if (txtPass.getEchoChar() != 0) {
+                txtPass.setEchoChar((char) 0);
+                btnTogglePass.setText("Hide");
+                btnTogglePass.setToolTipText("Hide password");
+            } else {
+                txtPass.setEchoChar('\u2022');
+                btnTogglePass.setText("Show");
+                btnTogglePass.setToolTipText("Show password");
+            }
+        });
+
+        wrapper.add(txtPass, BorderLayout.CENTER);
+        wrapper.add(btnTogglePass, BorderLayout.EAST);
+
+        return wrapper;
     }
 
     private JButton createButton(String text, Color bg, Color fg) {
