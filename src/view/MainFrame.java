@@ -8,7 +8,7 @@ import javax.swing.border.EmptyBorder;
 
 public class MainFrame extends JFrame {
     private JPanel contentPanel;
-    private JLabel lblDashboard, lblOrders, lblProducts, lblCustomers, lblTables, lblDiscounts, lblStaff, lblInventory, lblReports, lblSettings, lblRevenue;
+    private JLabel lblDashboard, lblOrders, lblProducts, lblCustomers, lblTables, lblStaff, lblReports, lblRevenue;
     private String currentPage = "Dashboard";
     private ThemeToggle themeToggle;
 
@@ -100,21 +100,15 @@ public class MainFrame extends JFrame {
 
         lblCustomers = createMenuItem("Customers", false);
         lblTables = createMenuItem("Tables", false);
-        lblDiscounts = createMenuItem("Discounts", false);
         lblStaff = createMenuItem("Staff", false);
-        lblInventory = createMenuItem("Inventory", false);
 
         lblCustomers.addMouseListener(createNavClick(lblCustomers, "Customers"));
         lblTables.addMouseListener(createNavClick(lblTables, "Tables"));
-        lblDiscounts.addMouseListener(createNavClick(lblDiscounts, "Discounts"));
         lblStaff.addMouseListener(createNavClick(lblStaff, "Staff"));
-        lblInventory.addMouseListener(createNavClick(lblInventory, "Inventory"));
 
         menu.add(lblCustomers);
         menu.add(lblTables);
-        menu.add(lblDiscounts);
         menu.add(lblStaff);
-        menu.add(lblInventory);
 
         // Section label
         JLabel lblAnalytics = createSectionLabel("ANALYTICS");
@@ -123,15 +117,12 @@ public class MainFrame extends JFrame {
 
         lblReports = createMenuItem("Reports", false);
         lblRevenue = createMenuItem("Revenue", false);
-        lblSettings = createMenuItem("Settings", false);
 
         lblReports.addMouseListener(createNavClick(lblReports, "Reports"));
         lblRevenue.addMouseListener(createNavClick(lblRevenue, "Revenue"));
-        lblSettings.addMouseListener(createNavClick(lblSettings, "Settings"));
 
         menu.add(lblReports);
         menu.add(lblRevenue);
-        menu.add(lblSettings);
 
         // Spacer
         menu.add(Box.createVerticalGlue());
@@ -228,12 +219,9 @@ public class MainFrame extends JFrame {
         resetMenuItem(lblProducts);
         resetMenuItem(lblCustomers);
         resetMenuItem(lblTables);
-        resetMenuItem(lblDiscounts);
         resetMenuItem(lblStaff);
-        resetMenuItem(lblInventory);
         resetMenuItem(lblReports);
         resetMenuItem(lblRevenue);
-        resetMenuItem(lblSettings);
 
         // Highlight active and show panel
         switch (page) {
@@ -257,17 +245,9 @@ public class MainFrame extends JFrame {
                 setActive(lblTables);
                 showTables();
                 break;
-            case "Discounts":
-                setActive(lblDiscounts);
-                showDiscounts();
-                break;
             case "Staff":
                 setActive(lblStaff);
                 showStaff();
-                break;
-            case "Inventory":
-                setActive(lblInventory);
-                showInventory();
                 break;
             case "Reports":
                 setActive(lblReports);
@@ -276,10 +256,6 @@ public class MainFrame extends JFrame {
             case "Revenue":
                 setActive(lblRevenue);
                 showRevenue();
-                break;
-            case "Settings":
-                setActive(lblSettings);
-                showSettings();
                 break;
         }
     }
@@ -329,23 +305,9 @@ public class MainFrame extends JFrame {
         contentPanel.repaint();
     }
 
-    private void showDiscounts() {
-        contentPanel.removeAll();
-        contentPanel.add(new DiscountPanel(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
     private void showStaff() {
         contentPanel.removeAll();
         contentPanel.add(new StaffPanel(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    private void showInventory() {
-        contentPanel.removeAll();
-        contentPanel.add(new InventoryPanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
@@ -360,13 +322,6 @@ public class MainFrame extends JFrame {
     private void showRevenue() {
         contentPanel.removeAll();
         contentPanel.add(new RevenuePanel(), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    private void showSettings() {
-        contentPanel.removeAll();
-        contentPanel.add(new SettingsPanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }

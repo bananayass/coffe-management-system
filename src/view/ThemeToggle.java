@@ -7,34 +7,75 @@ import java.awt.event.ActionListener;
 
 /**
  * Theme Toggle Button - Switch between Light and Dark mode
+ * Styled as a toggle switch
  */
-public class ThemeToggle extends JButton {
+public class ThemeToggle extends JPanel {
 
     private static boolean isDarkMode = false;
+    private JButton btnToggle;
 
     public ThemeToggle() {
-        setText(isDarkMode ? "Light Mode" : "Dark Mode");
-        setFont(UITheme.FONT_SMALL);
-        setForeground(UITheme.TEXT_DARK);
-        setBackground(UITheme.BG_MEDIUM);
-        setFocusPainted(false);
-        setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        setBackground(UITheme.BG_DARK);
+        setOpaque(false);
 
-        addActionListener(e -> toggleTheme());
+        btnToggle = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Background track
+                g2.setColor(isDarkMode ? UITheme.PRIMARY : new Color(200, 200, 200));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+
+                // Thumb
+                g2.setColor(Color.WHITE);
+                int thumbX = isDarkMode ? getWidth() - 24 : 2;
+                g2.fillOval(thumbX, 2, 20, 20);
+
+                g2.dispose();
+            }
+        };
+
+        btnToggle.setPreferredSize(new Dimension(50, 24));
+        btnToggle.setContentAreaFilled(false);
+        btnToggle.setBorderPainted(false);
+        btnToggle.setFocusPainted(false);
+        btnToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnToggle.setToolTipText(isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode");
+
+        btnToggle.addActionListener(e -> toggleTheme());
+
+        add(btnToggle);
+
+        // Add label
+        JLabel lbl = new JLabel(isDarkMode ? "Dark" : "Light");
+        lbl.setFont(UITheme.FONT_SMALL);
+        lbl.setForeground(new Color(148, 163, 184));
+        lbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+        add(lbl);
     }
 
     private void toggleTheme() {
         isDarkMode = !isDarkMode;
 
-        // Update UITheme colors
         if (isDarkMode) {
             applyDarkMode();
         } else {
             applyLightMode();
         }
 
-        setText(isDarkMode ? "Light Mode" : "Dark Mode");
+        btnToggle.setToolTipText(isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode");
+
+        // Update label
+        for (Component c : getComponents()) {
+            if (c instanceof JLabel) {
+                ((JLabel) c).setText(isDarkMode ? "Dark" : "Light");
+            }
+        }
+
+        btnToggle.repaint();
 
         // Notify all windows to refresh
         for (Window w : Window.getWindows()) {

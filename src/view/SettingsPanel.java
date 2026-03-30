@@ -9,8 +9,6 @@ public class SettingsPanel extends JPanel {
     private SettingsDAO settingsDAO = new SettingsDAO();
 
     private JTextField txtShopName, txtShopAddress, txtShopPhone;
-    private JSpinner spnTaxRate, spnLowStock;
-    private JComboBox<String> cmbCurrency;
 
     public SettingsPanel() {
         setLayout(new BorderLayout());
@@ -49,16 +47,10 @@ public class SettingsPanel extends JPanel {
         // Shop Info
         JPanel shopInfo = createSection("Shop Information");
         String shopName = "Coffee Shop", shopAddr = "", shopPhone = "";
-        double taxRate = 8;
-        String currency = "VND";
-        int lowStock = 10;
         try {
             shopName = settingsDAO.getShopName() != null ? settingsDAO.getShopName() : "Coffee Shop";
             shopAddr = settingsDAO.getShopAddress() != null ? settingsDAO.getShopAddress() : "";
             shopPhone = settingsDAO.getShopPhone() != null ? settingsDAO.getShopPhone() : "";
-            taxRate = settingsDAO.getTaxRate();
-            currency = settingsDAO.getCurrency() != null ? settingsDAO.getCurrency() : "VND";
-            lowStock = settingsDAO.getLowStockThreshold();
         } catch (Exception e) { e.printStackTrace(); }
 
         txtShopName = new JTextField(shopName);
@@ -68,21 +60,6 @@ public class SettingsPanel extends JPanel {
         shopInfo.add(createFormRow("Shop Name:", txtShopName));
         shopInfo.add(createFormRow("Address:", txtShopAddress));
         shopInfo.add(createFormRow("Phone:", txtShopPhone));
-
-        // Tax & Currency
-        JPanel taxPanel = createSection("Tax & Currency");
-        spnTaxRate = new JSpinner(new SpinnerNumberModel(taxRate, 0, 30, 1));
-        cmbCurrency = new JComboBox<>(new String[]{"VND", "USD", "EUR", "GBP"});
-        cmbCurrency.setSelectedItem(currency);
-
-        taxPanel.add(createFormRow("Tax Rate (%):", spnTaxRate));
-        taxPanel.add(createFormRow("Currency:", cmbCurrency));
-
-        // Inventory
-        JPanel invPanel = createSection("Inventory Settings");
-        spnLowStock = new JSpinner(new SpinnerNumberModel(lowStock, 1, 100, 1));
-
-        invPanel.add(createFormRow("Low Stock Alert Threshold:", spnLowStock));
 
         // Buttons
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -106,10 +83,6 @@ public class SettingsPanel extends JPanel {
         allForms.setLayout(new BoxLayout(allForms, BoxLayout.Y_AXIS));
         allForms.setBackground(UITheme.BG_CARD);
         allForms.add(shopInfo);
-        allForms.add(Box.createVerticalStrut(16));
-        allForms.add(taxPanel);
-        allForms.add(Box.createVerticalStrut(16));
-        allForms.add(invPanel);
         allForms.add(Box.createVerticalStrut(24));
         allForms.add(btnPanel);
 
@@ -170,9 +143,6 @@ public class SettingsPanel extends JPanel {
             settingsDAO.setValue("shop_name", txtShopName.getText());
             settingsDAO.setValue("shop_address", txtShopAddress.getText());
             settingsDAO.setValue("shop_phone", txtShopPhone.getText());
-            settingsDAO.setValue("tax_rate", String.valueOf(spnTaxRate.getValue()));
-            settingsDAO.setValue("currency", (String) cmbCurrency.getSelectedItem());
-            settingsDAO.setValue("low_stock_threshold", String.valueOf(spnLowStock.getValue()));
 
             JOptionPane.showMessageDialog(this, "Settings saved successfully!");
         } catch (Exception e) {
@@ -189,9 +159,6 @@ public class SettingsPanel extends JPanel {
             txtShopName.setText("Coffee Shop");
             txtShopAddress.setText("123 Street, City");
             txtShopPhone.setText("0901234567");
-            spnTaxRate.setValue(8);
-            cmbCurrency.setSelectedItem("VND");
-            spnLowStock.setValue(10);
             saveSettings();
         }
     }
