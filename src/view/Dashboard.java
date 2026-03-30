@@ -1,18 +1,23 @@
 package view;
 
+import dao.CustomerDAO;
+import dao.DBConnection;
+import dao.OrderDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,16 +27,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
-import dao.CustomerDAO;
-import dao.DBConnection;
-import dao.OrderDAO;
-
-public class Dashboard extends JPanel {
+public class Dashboard extends JPanel implements ActionListener {
 
     private JLabel lblProducts, lblOrders, lblRevenue, lblCustomers;
+    private JLabel lblTime, lblGreeting;
     private MainFrame mainFrame; // Reference to navigate
+    private Timer timer;
 
     public Dashboard() {
         this(null);
@@ -46,6 +50,36 @@ public class Dashboard extends JPanel {
         add(content, BorderLayout.CENTER);
 
         loadData();
+        startTimer();
+    }
+
+    private void startTimer() {
+        timer = new Timer(1000, this);
+        timer.start();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        updateTime();
+    }
+
+    private void updateTime() {
+        if (lblTime != null) {
+            java.time.LocalTime now = java.time.LocalTime.now();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss");
+            lblTime.setText(now.format(formatter));
+
+            // Update greeting based on time
+            int hour = now.getHour();
+            String greeting;
+            if (hour < 12) greeting = "Good Morning";
+            else if (hour < 17) greeting = "Good Afternoon";
+            else greeting = "Good Evening";
+
+            if (lblGreeting != null) {
+                lblGreeting.setText(greeting + "!");
+            }
+        }
     }
 
     private JPanel createContent() {
@@ -63,12 +97,22 @@ public class Dashboard extends JPanel {
         title.setFont(new Font("Segoe UI", Font.BOLD, 28));
         title.setForeground(UITheme.TEXT_DARK);
 
-        JLabel date = new JLabel(java.time.LocalDate.now().toString());
-        date.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        date.setForeground(UITheme.TEXT_LIGHT);
+        // Live time display
+        lblGreeting = new JLabel(getGreeting());
+        lblGreeting.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblGreeting.setForeground(UITheme.PRIMARY);
+
+        lblTime = new JLabel(java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
+        lblTime.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblTime.setForeground(UITheme.TEXT_LIGHT);
+
+        JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        datePanel.setBackground(UITheme.BG_COLOR);
+        datePanel.add(lblGreeting);
+        datePanel.add(lblTime);
 
         header.add(title, BorderLayout.WEST);
-        header.add(date, BorderLayout.EAST);
+        header.add(datePanel, BorderLayout.EAST);
 
         // Stats cards - 4 columns
         JPanel stats = new JPanel(new GridLayout(1, 4, 20, 0));
@@ -148,6 +192,13 @@ public class Dashboard extends JPanel {
             case "Customers": return "C";
             default: return "*";
         }
+    }
+
+    private String getGreeting() {
+        int hour = java.time.LocalTime.now().getHour();
+        if (hour < 12) return "Good Morning!";
+        else if (hour < 17) return "Good Afternoon!";
+        else return "Good Evening!";
     }
 
     private JPanel createActivityPanel() {

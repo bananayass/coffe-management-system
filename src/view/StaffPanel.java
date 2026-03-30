@@ -2,6 +2,7 @@ package view;
 
 import dao.UserDAO;
 import model.User;
+import utils.PasswordHelper;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -142,7 +143,7 @@ public class StaffPanel extends JPanel {
             try {
                 User u = new User();
                 u.setUsername(txtUsername.getText());
-                u.setPassword(new String(txtPassword.getPassword()));
+                u.setPassword(PasswordHelper.hashPassword(new String(txtPassword.getPassword())));
                 u.setFullName(txtFullName.getText());
                 u.setRole((String) cmbRole.getSelectedItem());
                 u.setPhone(txtPhone.getText());
@@ -191,7 +192,7 @@ public class StaffPanel extends JPanel {
 
             if (result == JOptionPane.OK_OPTION) {
                 u.setUsername(txtUsername.getText());
-                u.setPassword(new String(txtPassword.getPassword()));
+                u.setPassword(PasswordHelper.hashPassword(new String(txtPassword.getPassword())));
                 u.setFullName(txtFullName.getText());
                 u.setRole((String) cmbRole.getSelectedItem());
                 u.setPhone(txtPhone.getText());

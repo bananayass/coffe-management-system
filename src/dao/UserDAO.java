@@ -1,6 +1,7 @@
 package dao;
 
 import model.User;
+import utils.PasswordHelper;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +11,27 @@ public class UserDAO {
     public boolean login(String username, String password) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM users WHERE username=? AND password=? AND is_active = TRUE";
+            String sql = "SELECT password FROM users WHERE username=? AND is_active = TRUE";
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, username);
-            ps.setString(2, password);
 
             ResultSet rs = ps.executeQuery();
-            return rs.next();
+            if (rs.next()) {
+                String storedHash = rs.getString("password");
+                // Check if password is already hashed
+                if (PasswordHelper.isHashed(storedHash)) {
+                    return PasswordHelper.verifyPassword(password, storedHash);
+                } else {
+                    // Legacy: plain text - verify and upgrade to hash
+                    if (password.equals(storedHash)) {
+                        // Upgrade to hashed password
+                        upgradePassword(username, password);
+                        return true;
+                    }
+                }
+            }
+            return false;
         } catch (Exception e) {
             return false;
         }
@@ -141,12 +155,25 @@ public class UserDAO {
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, username);
-            ps.setString(2, password);
+            ps.setString(2, PasswordHelper.hashPassword(password));
 
             ps.executeUpdate();
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    private void upgradePassword(String username, String plainPassword) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE users SET password = ? WHERE username = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, PasswordHelper.hashPassword(plainPassword));
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
