@@ -12,9 +12,15 @@ import java.awt.event.ActionListener;
 public class ThemeToggle extends JPanel {
 
     private static boolean isDarkMode = false;
+    private static MainFrame mainFrame;
     private JButton btnToggle;
 
     public ThemeToggle() {
+        this(null);
+    }
+
+    public ThemeToggle(MainFrame mainFrame) {
+        ThemeToggle.mainFrame = mainFrame;
         setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         setBackground(UITheme.BG_DARK);
         setOpaque(false);
@@ -77,11 +83,24 @@ public class ThemeToggle extends JPanel {
 
         btnToggle.repaint();
 
-        // Notify all windows to refresh
-        for (Window w : Window.getWindows()) {
-            w.repaint();
-            w.revalidate();
+        // Refresh main frame by navigating to current page
+        if (mainFrame != null) {
+            mainFrame.refreshCurrentView();
+        } else {
+            // Fallback: refresh all windows
+            for (Window w : Window.getWindows()) {
+                w.repaint();
+                w.revalidate();
+            }
         }
+    }
+
+    public static MainFrame getMainFrame() {
+        return mainFrame;
+    }
+
+    public static void setMainFrame(MainFrame frame) {
+        mainFrame = frame;
     }
 
     public static void applyDarkMode() {

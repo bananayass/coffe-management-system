@@ -1,8 +1,5 @@
 package view;
 
-import dao.CustomerDAO;
-import dao.DBConnection;
-import dao.OrderDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -18,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -29,6 +27,10 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+
+import dao.CustomerDAO;
+import dao.DBConnection;
+import dao.OrderDAO;
 
 public class Dashboard extends JPanel implements ActionListener {
 

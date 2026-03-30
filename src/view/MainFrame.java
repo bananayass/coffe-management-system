@@ -68,7 +68,7 @@ public class MainFrame extends JFrame {
         logoPanel.add(sub);
 
         // Theme toggle
-        themeToggle = new ThemeToggle();
+        themeToggle = new ThemeToggle(this);
         themeToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         topPanel.add(logoPanel);
@@ -324,6 +324,10 @@ public class MainFrame extends JFrame {
         contentPanel.add(new RevenuePanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
+    }
+
+    public void refreshCurrentView() {
+        navigateTo(currentPage);
     }
 
     public static void main(String[] args) {
